@@ -5,13 +5,13 @@ import uuid
 from . import my_srt
 
 bl_info = {
-    "name": "SubRip形式の字幕ファイルを読み込み、VSEに字幕を追加するアドオン",
+    "name": ".srt Loader",
     "author": "kanta",
     "version": (0, 1),
     "blender": (3, 4, 0),
     "location": "VSE > Sidebar",
-    "description": "SubRip形式の字幕ファイルを読み込み、VSEに字幕を追加するアドオン",
-    "category": "Object"
+    "description": "SubRip形式の字幕ファイルと画像格納ディレクトリから、対応する字幕画像をイメージストリップとして追加する",
+    "category": "Sequencer"
 }
 
 
@@ -178,7 +178,7 @@ class SRTLOADER_PT_SrtList(bpy.types.Panel):
     bl_label = "SRT Loader"
     bl_space_type = "SEQUENCE_EDITOR"
     bl_region_type = "UI"
-    bl_category = "字幕画像"
+    bl_category = "Subtitle Images"
     # bl_context = "objectmode"
 
     @classmethod
@@ -191,7 +191,7 @@ class SRTLOADER_PT_SrtList(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.label(text="字幕ファイル")
+        layout.label(text=".srt File")
         obj = bpy.data.objects[0]
 
         layout.template_list("SRTLOADER_UL_SrtFile", "", obj, "srt_list", obj, "srt_index")
