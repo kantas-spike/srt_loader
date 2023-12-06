@@ -41,7 +41,7 @@ class SrtLoaderRemoveImportedImages(bpy.types.Operator):
         imported_images = []
         sequences = context.scene.sequence_editor.sequences
         for seq in sequences:
-            if seq.type == "IMAGE" and seq["srt_uuid"] == srt_uuid:
+            if seq.type == "IMAGE" and seq.get("srt_uuid") == srt_uuid:
                 imported_images.append(seq)
 
         for seq in imported_images:
