@@ -11,7 +11,7 @@ bl_info = {
     "blender": (3, 4, 0),
     "location": "VSE > Sidebar",
     "description": "SubRip形式の字幕ファイルと画像格納ディレクトリから、対応する字幕画像をイメージストリップとして追加する",
-    "category": "Sequencer"
+    "category": "Sequencer",
 }
 
 
@@ -19,7 +19,7 @@ class SrtLoaderRemoveImportedImages(bpy.types.Operator):
     bl_idname = "srt_loader.remove_imported_images"
     bl_label = "インポートした字幕画像を削除する"
     bl_description = "インポートした字幕画像を削除する"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
     def poll(cls, context):
@@ -36,25 +36,25 @@ class SrtLoaderRemoveImportedImages(bpy.types.Operator):
         srt_info = obj.srt_list[obj.srt_index]
         srt_uuid = srt_info.uuid
         if srt_uuid is None:
-            return {'CANCELLED'}
+            return {"CANCELLED"}
 
         imported_images = []
         sequences = context.scene.sequence_editor.sequences
         for seq in sequences:
-            if seq.type == 'IMAGE' and seq["srt_uuid"] == srt_uuid:
+            if seq.type == "IMAGE" and seq["srt_uuid"] == srt_uuid:
                 imported_images.append(seq)
 
         for seq in imported_images:
             sequences.remove(seq)
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class SrtLoaderImportImages(bpy.types.Operator):
     bl_idname = "srt_loader.import_images"
     bl_label = "字幕画像をインポートする"
     bl_description = "画像ディレクトリから字幕画像をインポートする"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
     def poll(cls, context):
@@ -65,7 +65,9 @@ class SrtLoaderImportImages(bpy.types.Operator):
         else:
             return True
 
-    def load_jimaku(self, srt_path, img_dir, channel_no=4, offset_x=0, offset_y=-400, srt_uuid=None):
+    def load_jimaku(
+        self, srt_path, img_dir, channel_no=4, offset_x=0, offset_y=-400, srt_uuid=None
+    ):
         abs_srt_path = bpy.path.abspath(srt_path)
         abs_img_dir = bpy.path.abspath(img_dir)
 
@@ -76,21 +78,28 @@ class SrtLoaderImportImages(bpy.types.Operator):
             img_path = os.path.join(abs_img_dir, f"{item['no']}.png")
             if os.path.isfile(img_path):
                 # load image
-                start_frame = int(
-                    item["time_info"]["start"].total_seconds() * fps)
-                end_frame = int(
-                    item["time_info"]["end"].total_seconds() * fps)
+                start_frame = int(item["time_info"]["start"].total_seconds() * fps)
+                end_frame = int(item["time_info"]["end"].total_seconds() * fps)
 
                 img = bpy.context.scene.sequence_editor.sequences.new_image(
-                    os.path.basename(img_path), img_path, channel_no, start_frame, fit_method="ORIGINAL")
+                    os.path.basename(img_path),
+                    img_path,
+                    channel_no,
+                    start_frame,
+                    fit_method="ORIGINAL",
+                )
                 img.frame_final_end = end_frame
 
-                if ("json" in item["time_info"]) and ("offset_x" in item["time_info"]["json"]):
+                if ("json" in item["time_info"]) and (
+                    "offset_x" in item["time_info"]["json"]
+                ):
                     img.transform.offset_x = item["time_info"]["json"]["offset_x"]
                 else:
                     img.transform.offset_x = offset_x
 
-                if ("json" in item["time_info"]) and ("offset_y" in item["time_info"]["json"]):
+                if ("json" in item["time_info"]) and (
+                    "offset_y" in item["time_info"]["json"]
+                ):
                     img.transform.offset_y = item["time_info"]["json"]["offset_y"]
                 else:
                     img.transform.offset_y = offset_y
@@ -105,16 +114,19 @@ class SrtLoaderImportImages(bpy.types.Operator):
         srt_path = srt_info.srt_file
         img_dir = srt_info.image_dir
         if not srt_path:
-            return {'CANCELLED'}
+            return {"CANCELLED"}
         if not img_dir:
-            return {'CANCELLED'}
+            return {"CANCELLED"}
 
-        self.load_jimaku(srt_path, img_dir,
-                         srt_info.channel_no,
-                         srt_info.offset_x,
-                         srt_info.offset_y,
-                         srt_info.uuid)
-        return {'FINISHED'}
+        self.load_jimaku(
+            srt_path,
+            img_dir,
+            srt_info.channel_no,
+            srt_info.offset_x,
+            srt_info.offset_y,
+            srt_info.uuid,
+        )
+        return {"FINISHED"}
 
 
 class SrtLoaderAddItem(bpy.types.Operator):
@@ -127,7 +139,7 @@ class SrtLoaderAddItem(bpy.types.Operator):
         item = obj.srt_list.add()
         item.uuid = str(uuid.uuid4())
         print("add:", len(obj.srt_list), obj.srt_index, item.uuid)
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class SrtLoaderRemoveItem(bpy.types.Operator):
@@ -146,7 +158,7 @@ class SrtLoaderRemoveItem(bpy.types.Operator):
         if index > 0:
             obj.srt_index -= 1
         print("remove:", len(obj.srt_list), obj.srt_index)
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class SrtLoaderSelectItem(bpy.types.Operator):
@@ -160,16 +172,27 @@ class SrtLoaderSelectItem(bpy.types.Operator):
         obj = bpy.data.objects[0]
         obj.srt_index = self.item_index
         print("select:", len(obj.srt_list), obj.srt_index)
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class SRTLOADER_UL_SrtFile(bpy.types.UIList):
-    def draw_item(self, context: 'Context', layout: 'UILayout', data: 'AnyType', item: 'AnyType', icon: int, active_data: 'AnyType', active_property: str, index: int = 0, flt_flag: int = 0):
+    def draw_item(
+        self,
+        context: "Context",
+        layout: "UILayout",
+        data: "AnyType",
+        item: "AnyType",
+        icon: int,
+        active_data: "AnyType",
+        active_property: str,
+        index: int = 0,
+        flt_flag: int = 0,
+    ):
         if item.srt_file:
             label = item.srt_file
         else:
             label = ""
-        layout.alignment = 'RIGHT'
+        layout.alignment = "RIGHT"
         btn = layout.operator(SrtLoaderSelectItem.bl_idname, text=f"{label}")
         btn.item_index = index
 
@@ -183,18 +206,20 @@ class SRTLOADER_PT_SrtList(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.space_data.view_type == 'SEQUENCER'
+        return context.space_data.view_type == "SEQUENCER"
 
     def draw_header(self, context):
         layout = self.layout
-        layout.label(text="", icon='PLUGIN')
+        layout.label(text="", icon="PLUGIN")
 
     def draw(self, context):
         layout = self.layout
         layout.label(text=".srt File")
         obj = bpy.data.objects[0]
 
-        layout.template_list("SRTLOADER_UL_SrtFile", "", obj, "srt_list", obj, "srt_index")
+        layout.template_list(
+            "SRTLOADER_UL_SrtFile", "", obj, "srt_list", obj, "srt_index"
+        )
         row = layout.row()
         row.operator(SrtLoaderAddItem.bl_idname, text="追加")
         row.operator(SrtLoaderRemoveItem.bl_idname, text="削除")
@@ -202,15 +227,15 @@ class SRTLOADER_PT_SrtList(bpy.types.Panel):
         if len(obj.srt_list) > 0 and obj.srt_index < len(obj.srt_list):
             srt_info = obj.srt_list[obj.srt_index]
             row = layout.row()
-            row.prop(srt_info, 'srt_file', text='file:')
+            row.prop(srt_info, "srt_file", text="file:")
             row = layout.row()
-            row.prop(srt_info, 'image_dir', text='image dir:')
+            row.prop(srt_info, "image_dir", text="image dir:")
             row = layout.row()
-            row.prop(srt_info, 'channel_no', text='Channel No.:')
+            row.prop(srt_info, "channel_no", text="Channel No.:")
             row = layout.row()
-            row.prop(srt_info, 'offset_x', text='Default Image Offset X')
+            row.prop(srt_info, "offset_x", text="Default Image Offset X")
             row = layout.row()
-            row.prop(srt_info, 'offset_y', text='Default Image Offset Y')
+            row.prop(srt_info, "offset_y", text="Default Image Offset Y")
             row = layout.row()
             row.operator(SrtLoaderImportImages.bl_idname, text="字幕画像を読み込む")
             row = layout.row()
@@ -226,8 +251,16 @@ class SrtLoaderProperties(bpy.types.PropertyGroup):
     uuid: bpy.props.StringProperty()
 
 
-classes = [SRTLOADER_PT_SrtList, SrtLoaderProperties, SrtLoaderImportImages, SrtLoaderRemoveImportedImages,
-           SrtLoaderAddItem, SrtLoaderRemoveItem, SrtLoaderSelectItem, SRTLOADER_UL_SrtFile]
+classes = [
+    SRTLOADER_PT_SrtList,
+    SrtLoaderProperties,
+    SrtLoaderImportImages,
+    SrtLoaderRemoveImportedImages,
+    SrtLoaderAddItem,
+    SrtLoaderRemoveItem,
+    SrtLoaderSelectItem,
+    SRTLOADER_UL_SrtFile,
+]
 
 
 def register():
@@ -235,7 +268,9 @@ def register():
         bpy.utils.register_class(c)
 
     bpy.types.Object.srt_list = bpy.props.CollectionProperty(type=SrtLoaderProperties)
-    bpy.types.Object.srt_index = bpy.props.IntProperty(name="Index of srt_list", default=0)
+    bpy.types.Object.srt_index = bpy.props.IntProperty(
+        name="Index of srt_list", default=0
+    )
 
 
 def unregister():
