@@ -178,15 +178,15 @@ class SrtLoaderSelectItem(bpy.types.Operator):
 class SRTLOADER_UL_SrtFile(bpy.types.UIList):
     def draw_item(
         self,
-        context: "Context",
-        layout: "UILayout",
-        data: "AnyType",
-        item: "AnyType",
-        icon: int,
-        active_data: "AnyType",
-        active_property: str,
-        index: int = 0,
-        flt_flag: int = 0,
+        context,
+        layout,
+        data,
+        item,
+        icon,
+        active_data,
+        active_property,
+        index=0,
+        flt_flag=0,
     ):
         if item.srt_file:
             label = item.srt_file
