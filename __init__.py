@@ -203,6 +203,7 @@ class StrLoaderGetTimestampOfPlayhead(bpy.types.Operator):
             f"frame_rate: {frame_rate}, cur_frame: {cur_frame}, timestamp: {timestamp}"
         )
         self.report({"INFO"}, timestamp)
+        context.window_manager.clipboard = timestamp
         return {"FINISHED"}
 
 
