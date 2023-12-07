@@ -71,15 +71,18 @@ class SrtLoaderImportImages(bpy.types.Operator):
         abs_srt_path = bpy.path.abspath(srt_path)
         abs_img_dir = bpy.path.abspath(img_dir)
 
-        fps = round(bpy.context.scene.render.fps / bpy.context.scene.render.fps_base)
+        fps = bpy.context.scene.render.fps / bpy.context.scene.render.fps_base
 
         items = my_srt.read_srt_file(abs_srt_path)
         for item in items:
             img_path = os.path.join(abs_img_dir, f"{item['no']}.png")
             if os.path.isfile(img_path):
                 # load image
-                start_frame = int(item["time_info"]["start"].total_seconds() * fps)
-                end_frame = int(item["time_info"]["end"].total_seconds() * fps)
+                start_frame = round(item["time_info"]["start"].total_seconds() * fps)
+                end_frame = round(item["time_info"]["end"].total_seconds() * fps)
+                # print(
+                #     f"{item['no']}: end_frame: {end_frame}, stamp: {item['time_info']['end']}"
+                # )
 
                 img = bpy.context.scene.sequence_editor.sequences.new_image(
                     os.path.basename(img_path),
@@ -88,7 +91,7 @@ class SrtLoaderImportImages(bpy.types.Operator):
                     start_frame,
                     fit_method="ORIGINAL",
                 )
-                img.frame_final_end = end_frame
+                img.frame_final_end = end_frame + 1
 
                 if ("json" in item["time_info"]) and (
                     "offset_x" in item["time_info"]["json"]
