@@ -1,7 +1,7 @@
 import bpy
-from bpy.props import StringProperty, IntProperty, FloatProperty
 import os
 import uuid
+import datetime
 from . import my_srt
 
 bl_info = {
@@ -71,15 +71,18 @@ class SrtLoaderImportImages(bpy.types.Operator):
         abs_srt_path = bpy.path.abspath(srt_path)
         abs_img_dir = bpy.path.abspath(img_dir)
 
-        fps = round(bpy.context.scene.render.fps / bpy.context.scene.render.fps_base)
+        fps = bpy.context.scene.render.fps / bpy.context.scene.render.fps_base
 
         items = my_srt.read_srt_file(abs_srt_path)
         for item in items:
             img_path = os.path.join(abs_img_dir, f"{item['no']}.png")
             if os.path.isfile(img_path):
                 # load image
-                start_frame = int(item["time_info"]["start"].total_seconds() * fps)
-                end_frame = int(item["time_info"]["end"].total_seconds() * fps)
+                start_frame = round(item["time_info"]["start"].total_seconds() * fps)
+                end_frame = round(item["time_info"]["end"].total_seconds() * fps)
+                # print(
+                #     f"{item['no']}: end_frame: {end_frame}, stamp: {item['time_info']['end']}"
+                # )
 
                 img = bpy.context.scene.sequence_editor.sequences.new_image(
                     os.path.basename(img_path),
@@ -88,7 +91,7 @@ class SrtLoaderImportImages(bpy.types.Operator):
                     start_frame,
                     fit_method="ORIGINAL",
                 )
-                img.frame_final_end = end_frame
+                img.frame_final_end = end_frame + 1
 
                 if ("json" in item["time_info"]) and (
                     "offset_x" in item["time_info"]["json"]
@@ -175,18 +178,46 @@ class SrtLoaderSelectItem(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class StrLoaderGetTimestampOfPlayhead(bpy.types.Operator):
+    bl_idname = "srt_loader.copy_timestamp_of_playhead"
+    bl_label = "Copy playhead timestamp"
+    bl_description = "Playheadのタイムスタンプを取得する"
+
+    @classmethod
+    def poll(cls, context):
+        return context.space_data.view_type == "SEQUENCER"
+
+    def format_srt_timestamp(self, delta):
+        m, s = divmod(delta.seconds, 60)
+        h, m = divmod(m, 60)
+        return "{:02}:{:02}:{:02},{:03}".format(
+            h, m, s, round(delta.microseconds / 1000)
+        )
+
+    def execute(self, context):
+        frame_rate = bpy.context.scene.render.fps / bpy.context.scene.render.fps_base
+        cur_frame = bpy.context.scene.frame_current
+        delta = datetime.timedelta(seconds=(cur_frame / frame_rate))
+        timestamp = self.format_srt_timestamp(delta)
+        print(
+            f"frame_rate: {frame_rate}, cur_frame: {cur_frame}, timestamp: {timestamp}"
+        )
+        self.report({"INFO"}, timestamp)
+        return {"FINISHED"}
+
+
 class SRTLOADER_UL_SrtFile(bpy.types.UIList):
     def draw_item(
         self,
-        context: "Context",
-        layout: "UILayout",
-        data: "AnyType",
-        item: "AnyType",
-        icon: int,
-        active_data: "AnyType",
-        active_property: str,
-        index: int = 0,
-        flt_flag: int = 0,
+        context,
+        layout,
+        data,
+        item,
+        icon,
+        active_data,
+        active_property,
+        index=0,
+        flt_flag=0,
     ):
         if item.srt_file:
             label = item.srt_file
@@ -251,6 +282,11 @@ class SrtLoaderProperties(bpy.types.PropertyGroup):
     uuid: bpy.props.StringProperty()
 
 
+def menu_fn(self, context):
+    self.layout.separator()
+    self.layout.operator(StrLoaderGetTimestampOfPlayhead.bl_idname)
+
+
 classes = [
     SRTLOADER_PT_SrtList,
     SrtLoaderProperties,
@@ -260,6 +296,7 @@ classes = [
     SrtLoaderRemoveItem,
     SrtLoaderSelectItem,
     SRTLOADER_UL_SrtFile,
+    StrLoaderGetTimestampOfPlayhead,
 ]
 
 
@@ -271,9 +308,11 @@ def register():
     bpy.types.Object.srt_index = bpy.props.IntProperty(
         name="Index of srt_list", default=0
     )
+    bpy.types.SEQUENCER_MT_context_menu.append(menu_fn)
 
 
 def unregister():
+    bpy.types.SEQUENCER_MT_context_menu.remove(menu_fn)
     for c in classes:
         bpy.utils.unregister_class(c)
 
