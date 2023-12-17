@@ -224,7 +224,7 @@ class SRTLOADER_UL_SrtFile(bpy.types.UIList):
             label = item.srt_file
         else:
             label = ""
-        layout.alignment = "RIGHT"
+        layout.alignment = "LEFT"
         btn = layout.operator(SrtLoaderSelectItem.bl_idname, text=f"{label}")
         btn.item_index = index
 
