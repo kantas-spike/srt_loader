@@ -92,6 +92,9 @@ class SrtLoaderImportImages(bpy.types.Operator):
                     fit_method="ORIGINAL",
                 )
                 img.frame_final_end = end_frame + 1
+                img.transform.origin = [0.5, 1.0]
+                element = img.elements[0]
+                height_offset = element.orig_height * img.transform.scale_y / 2
 
                 if ("json" in item["time_info"]) and (
                     "offset_x" in item["time_info"]["json"]
@@ -103,9 +106,11 @@ class SrtLoaderImportImages(bpy.types.Operator):
                 if ("json" in item["time_info"]) and (
                     "offset_y" in item["time_info"]["json"]
                 ):
-                    img.transform.offset_y = item["time_info"]["json"]["offset_y"]
+                    img.transform.offset_y = (
+                        item["time_info"]["json"]["offset_y"] - height_offset
+                    )
                 else:
-                    img.transform.offset_y = offset_y
+                    img.transform.offset_y = offset_y - height_offset
 
                 img["srt_uuid"] = srt_uuid
 
@@ -224,7 +229,7 @@ class SRTLOADER_UL_SrtFile(bpy.types.UIList):
             label = item.srt_file
         else:
             label = ""
-        layout.alignment = "RIGHT"
+        layout.alignment = "LEFT"
         btn = layout.operator(SrtLoaderSelectItem.bl_idname, text=f"{label}")
         btn.item_index = index
 
