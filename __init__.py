@@ -80,10 +80,6 @@ class SrtLoaderImportImages(bpy.types.Operator):
                 # load image
                 start_frame = round(item["time_info"]["start"].total_seconds() * fps)
                 end_frame = round(item["time_info"]["end"].total_seconds() * fps)
-                # print(
-                #     f"{item['no']}: end_frame: {end_frame}, stamp: {item['time_info']['end']}"
-                # )
-
                 img = bpy.context.scene.sequence_editor.sequences.new_image(
                     os.path.basename(img_path),
                     img_path,
