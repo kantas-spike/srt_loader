@@ -284,6 +284,19 @@ class SrtLoaderProperties(bpy.types.PropertyGroup):
     uuid: bpy.props.StringProperty()
 
 
+class SrtLoaderPreferences(bpy.types.AddonPreferences):
+    bl_idname = __name__
+
+    gimp_path: bpy.props.StringProperty(
+        name="Gimp", description="Gimpのパス", default="/usr/local/bin/gimp"
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column()
+        col.prop(self, "gimp_path", text="Gimpのパス")
+
+
 def menu_fn(self, context):
     self.layout.separator()
     self.layout.operator(StrLoaderGetTimestampOfPlayhead.bl_idname)
@@ -299,6 +312,7 @@ classes = [
     SrtLoaderSelectItem,
     SRTLOADER_UL_SrtFile,
     StrLoaderGetTimestampOfPlayhead,
+    SrtLoaderPreferences,
 ]
 
 
