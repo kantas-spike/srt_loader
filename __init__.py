@@ -1,8 +1,17 @@
+if "bpy" in locals():
+    import imp
+
+    imp.reload(my_srt)
+    imp.reload(props)
+else:
+    from . import my_srt
+    from . import props
+
 import bpy
 import os
 import uuid
 import datetime
-from . import my_srt
+
 
 bl_info = {
     "name": ".srt Loader",
@@ -275,15 +284,6 @@ class SRTLOADER_PT_SrtList(bpy.types.Panel):
             row.operator(SrtLoaderRemoveImportedImages.bl_idname, text="インポートした字幕画像を削除")
 
 
-class SrtLoaderProperties(bpy.types.PropertyGroup):
-    srt_file: bpy.props.StringProperty(subtype="FILE_PATH")
-    image_dir: bpy.props.StringProperty(subtype="DIR_PATH")
-    channel_no: bpy.props.IntProperty(default=1, min=1, max=128)
-    offset_x: bpy.props.FloatProperty(default=0)
-    offset_y: bpy.props.FloatProperty(default=-400)
-    uuid: bpy.props.StringProperty()
-
-
 class SrtLoaderPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
 
@@ -302,9 +302,8 @@ def menu_fn(self, context):
     self.layout.operator(StrLoaderGetTimestampOfPlayhead.bl_idname)
 
 
-classes = [
+classes = props.class_list + [
     SRTLOADER_PT_SrtList,
-    SrtLoaderProperties,
     SrtLoaderImportImages,
     SrtLoaderRemoveImportedImages,
     SrtLoaderAddItem,
@@ -316,14 +315,34 @@ classes = [
 ]
 
 
+def add_props():
+    bpy.types.Scene.srtloarder_settings = bpy.props.PointerProperty(
+        type=props.SrtLoaderProperties
+    )
+    bpy.types.Scene.srtloarder_list = bpy.props.PointerProperty(
+        type=props.SrtLoaderCurrentJimakuProperties
+    )
+    bpy.types.Object.srt_list = bpy.props.CollectionProperty(
+        type=props.SrtLoaderProperties
+    )
+    bpy.types.Object.srt_index = bpy.props.IntProperty(
+        name="Index of srt_list", default=0
+    )
+
+
+def remove_props():
+    del bpy.types.Scene.srtloarder_settings
+    del bpy.types.Scene.srtloarder_list
+    del bpy.types.Object.srt_list
+    del bpy.types.Object.srt_index
+
+
 def register():
     for c in classes:
         bpy.utils.register_class(c)
 
-    bpy.types.Object.srt_list = bpy.props.CollectionProperty(type=SrtLoaderProperties)
-    bpy.types.Object.srt_index = bpy.props.IntProperty(
-        name="Index of srt_list", default=0
-    )
+    add_props()
+
     bpy.types.SEQUENCER_MT_context_menu.append(menu_fn)
 
 
@@ -332,8 +351,7 @@ def unregister():
     for c in classes:
         bpy.utils.unregister_class(c)
 
-    del bpy.types.Object.srt_list
-    del bpy.types.Object.srt_index
+    remove_props()
 
 
 if __name__ == "__main__":
