@@ -9,7 +9,9 @@ else:
     from . import props
     from . import ops
 
+from typing import Any
 import bpy
+from bpy.types import Context, UILayout
 
 
 bl_info = {
@@ -23,73 +25,253 @@ bl_info = {
 }
 
 
-class SRTLOADER_UL_SrtFile(bpy.types.UIList):
-    def draw_item(
-        self,
-        context,
-        layout,
-        data,
-        item,
-        icon,
-        active_data,
-        active_property,
-        index=0,
-        flt_flag=0,
-    ):
-        if item.srt_file:
-            label = item.srt_file
-        else:
-            label = ""
-        layout.alignment = "LEFT"
-        btn = layout.operator(ops.SrtLoaderSelectItem.bl_idname, text=f"{label}")
-        btn.item_index = index
+def layout_property_row(layout, label, obj, prop_name, alignment="RIGHT", factor=0.4):
+    row = layout.row(align=True)
+    split = row.split(factor=factor)
+    split.alignment = alignment
+    split.label(text=label)
+    split.prop(obj, prop_name, text="")
 
 
-class SRTLOADER_PT_SrtList(bpy.types.Panel):
-    bl_label = "SRT Loader"
+class SrtLoaderPanelBase:
     bl_space_type = "SEQUENCE_EDITOR"
     bl_region_type = "UI"
-    bl_category = "Subtitle Images"
-    # bl_context = "objectmode"
+    bl_category = "SRT Loader"
 
     @classmethod
     def poll(cls, context):
         return context.space_data.view_type == "SEQUENCER"
 
-    def draw_header(self, context):
-        layout = self.layout
-        layout.label(text="", icon="PLUGIN")
 
-    def draw(self, context):
-        layout = self.layout
-        layout.label(text=".srt File")
-        obj = bpy.data.objects[0]
+class SourcePanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "Source"
+    bl_idname = "SRTLOADER_PT_Source"
 
-        layout.template_list(
-            "SRTLOADER_UL_SrtFile", "", obj, "srt_list", obj, "srt_index"
+    def draw(self, context: Context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        layout = self.layout
+        layout_property_row(layout, "Srt File", srtloarder_settings, "srt_file")
+        layout_property_row(layout, "Image Dir", srtloarder_settings, "image_dir")
+
+
+class DefaultSettingsPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "デフォルト設定"
+    bl_idname = "SRTLOADER_PT_DefaultSettings"
+
+    def draw(self, context: Context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        layout = self.layout
+        layout_property_row(
+            layout, "Channel No.", srtloarder_settings.settings, "channel_no"
         )
-        row = layout.row()
-        row.operator(ops.SrtLoaderAddItem.bl_idname, text="追加")
-        row.operator(ops.SrtLoaderRemoveItem.bl_idname, text="削除")
+        layout_property_row(
+            layout, "Image Offset X", srtloarder_settings.settings, "offset_x"
+        )
+        layout_property_row(
+            layout, "Image Offset Y", srtloarder_settings.settings, "offset_y"
+        )
 
-        if len(obj.srt_list) > 0 and obj.srt_index < len(obj.srt_list):
-            srt_info = obj.srt_list[obj.srt_index]
-            row = layout.row()
-            row.prop(srt_info, "srt_file", text="file:")
-            row = layout.row()
-            row.prop(srt_info, "image_dir", text="image dir:")
-            row = layout.row()
-            row.prop(srt_info, "channel_no", text="Channel No.:")
-            row = layout.row()
-            row.prop(srt_info, "offset_x", text="Default Image Offset X")
-            row = layout.row()
-            row.prop(srt_info, "offset_y", text="Default Image Offset Y")
-            row = layout.row()
-            row.operator(ops.SrtLoaderImportImages.bl_idname, text="字幕画像を読み込む")
-            row = layout.row()
-            row.operator(
-                ops.SrtLoaderRemoveImportedImages.bl_idname, text="インポートした字幕画像を削除"
-            )
+
+class DefaultStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "デフォルトスタイル"
+    bl_idname = "SRTLOADER_PT_DefaultStyles"
+
+    def draw(self, context: Context):
+        pass
+
+
+class DefaultImageStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "字幕画像スタイル"
+    bl_idname = "SRTLOADER_PT_DefaultImageStyles"
+    bl_parent_id = "SRTLOADER_PT_DefaultStyles"
+
+    def draw(self, context: Context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        layout = self.layout
+        layout_property_row(
+            layout, "padding x", srtloarder_settings.styles.image, "padding_x"
+        )
+        layout_property_row(
+            layout, "padding y", srtloarder_settings.styles.image, "padding_y"
+        )
+
+
+class DefaultTextStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "テキストスタイル"
+    bl_idname = "SRTLOADER_PT_DefaultTextStyles"
+    bl_parent_id = "SRTLOADER_PT_DefaultStyles"
+
+    def draw(self, context: Context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        layout = self.layout
+        layout_property_row(
+            layout, "font family", srtloarder_settings.styles.text, "font_family"
+        )
+        layout_property_row(
+            layout, "font size", srtloarder_settings.styles.text, "size"
+        )
+        layout_property_row(
+            layout, "font color", srtloarder_settings.styles.text, "color"
+        )
+        layout_property_row(
+            layout, "text align", srtloarder_settings.styles.text, "align"
+        )
+        layout_property_row(
+            layout, "line space", srtloarder_settings.styles.text, "line_space_rate"
+        )
+
+
+class DefaultBordersStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "縁取りスタイル"
+    bl_idname = "SRTLOADER_PT_DefaultBordersStyles"
+    bl_parent_id = "SRTLOADER_PT_DefaultStyles"
+
+    def draw(self, context: Context):
+        borders = bpy.data.objects[0].srtloarder_settings.styles.borders
+        layout = self.layout
+        layout_property_row(
+            layout,
+            "縁取り数",
+            borders,
+            "number_of_borders",
+        )
+
+
+class DefaultBordersStyle1Panel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "縁取り1"
+    bl_idname = "SRTLOADER_PT_DefaultBorder1Styles"
+    bl_parent_id = "SRTLOADER_PT_DefaultBordersStyles"
+
+    def draw(self, context: Context):
+        borders = bpy.data.objects[0].srtloarder_settings.styles.borders
+        number_of_borders = borders.number_of_borders
+        style = borders.style1
+        layout = self.layout
+        if number_of_borders < 1:
+            layout.enabled = False
+        layout_property_row(
+            layout,
+            "縁取り色",
+            style,
+            "color",
+        )
+        layout_property_row(
+            layout,
+            "縁取りサイズ",
+            style,
+            "rate",
+        )
+        layout_property_row(
+            layout,
+            "ぼかし幅",
+            style,
+            "feather",
+        )
+
+
+class DefaultBordersStyle2Panel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "縁取り2"
+    bl_idname = "SRTLOADER_PT_DefaultBorder2Styles"
+    bl_parent_id = "SRTLOADER_PT_DefaultBordersStyles"
+
+    def draw(self, context: Context):
+        borders = bpy.data.objects[0].srtloarder_settings.styles.borders
+        number_of_borders = borders.number_of_borders
+        style = borders.style2
+        layout = self.layout
+
+        if number_of_borders < 2:
+            layout.enabled = False
+        layout_property_row(
+            layout,
+            "縁取り色",
+            style,
+            "color",
+        )
+        layout_property_row(
+            layout,
+            "縁取りサイズ",
+            style,
+            "rate",
+        )
+        layout_property_row(
+            layout,
+            "ぼかし幅",
+            style,
+            "feather",
+        )
+
+
+class DefaultShadowStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "影スタイル"
+    bl_idname = "SRTLOADER_PT_DefaultShadowStyles"
+    bl_parent_id = "SRTLOADER_PT_DefaultStyles"
+
+    def draw_header(self, context: Context):
+        shadow = bpy.data.objects[0].srtloarder_settings.styles.shadow
+        self.layout.prop(shadow, "enabled", text="")
+
+    def draw(self, context: Context):
+        shadow = bpy.data.objects[0].srtloarder_settings.styles.shadow
+        layout = self.layout
+        layout.enabled = shadow.enabled
+        layout_property_row(
+            layout,
+            "影の色",
+            shadow,
+            "color",
+        )
+        layout_property_row(
+            layout,
+            "Offset X",
+            shadow,
+            "offset_x",
+        )
+        layout_property_row(
+            layout,
+            "Offset Y",
+            shadow,
+            "offset_y",
+        )
+        layout_property_row(
+            layout,
+            "ぼかし半径",
+            shadow,
+            "blur_radius",
+        )
+
+
+class DefaultBoxStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "BOXスタイル"
+    bl_idname = "SRTLOADER_PT_DefaultBoxStyles"
+    bl_parent_id = "SRTLOADER_PT_DefaultStyles"
+
+    def draw_header(self, context: Context):
+        box = bpy.data.objects[0].srtloarder_settings.styles.box
+        self.layout.prop(box, "enabled", text="")
+
+    def draw(self, context: Context):
+        box = bpy.data.objects[0].srtloarder_settings.styles.box
+        layout = self.layout
+        layout.enabled = box.enabled
+        layout_property_row(
+            layout,
+            "BOXの色",
+            box,
+            "color",
+        )
+        layout_property_row(
+            layout,
+            "Padding X",
+            box,
+            "padding_x",
+        )
+        layout_property_row(
+            layout,
+            "Padding Y",
+            box,
+            "padding_y",
+        )
 
 
 class SrtLoaderPreferences(bpy.types.AddonPreferences):
@@ -114,33 +296,35 @@ classes = (
     props.class_list
     + ops.class_list
     + [
-        SRTLOADER_PT_SrtList,
-        SRTLOADER_UL_SrtFile,
+        SourcePanel,
         SrtLoaderPreferences,
+        DefaultSettingsPanel,
+        DefaultStylesPanel,
+        DefaultImageStylesPanel,
+        DefaultTextStylesPanel,
+        DefaultBordersStylesPanel,
+        DefaultBordersStyle1Panel,
+        DefaultBordersStyle2Panel,
+        DefaultShadowStylesPanel,
+        DefaultBoxStylesPanel,
     ]
 )
 
 
 def add_props():
-    bpy.types.Scene.srtloarder_settings = bpy.props.PointerProperty(
+    bpy.types.Object.srtloarder_settings = bpy.props.PointerProperty(
         type=props.SrtLoaderProperties
     )
-    bpy.types.Scene.srtloarder_list = bpy.props.PointerProperty(
+    bpy.types.Object.srtloarder_list = bpy.props.PointerProperty(
         type=props.SrtLoaderCurrentJimakuProperties
     )
-    bpy.types.Object.srt_list = bpy.props.CollectionProperty(
-        type=props.SrtLoaderProperties
-    )
-    bpy.types.Object.srt_index = bpy.props.IntProperty(
-        name="Index of srt_list", default=0
-    )
+    # print(len(bpy.data.objects))
+    # print(settings)
 
 
 def remove_props():
-    del bpy.types.Scene.srtloarder_settings
-    del bpy.types.Scene.srtloarder_list
-    del bpy.types.Object.srt_list
-    del bpy.types.Object.srt_index
+    del bpy.types.Object.srtloarder_settings
+    del bpy.types.Object.srtloarder_list
 
 
 def register():
@@ -148,7 +332,6 @@ def register():
         bpy.utils.register_class(c)
 
     add_props()
-
     bpy.types.SEQUENCER_MT_context_menu.append(menu_fn)
 
 
