@@ -4,7 +4,7 @@ import os
 import uuid
 import datetime
 
-from bpy.types import Context
+from bpy.types import Context, Event
 from . import my_srt
 
 
@@ -188,7 +188,7 @@ class StrLoaderGetTimestampOfPlayhead(bpy.types.Operator):
         )
 
     def execute(self, context):
-        frame_rate = bpy.context.scene.render.fps / bpy.context.scene.render.fps_base
+        frame_rate = get_frame_rate()
         cur_frame = bpy.context.scene.frame_current
         delta = datetime.timedelta(seconds=(cur_frame / frame_rate))
         timestamp = self.format_srt_timestamp(delta)
@@ -200,6 +200,145 @@ class StrLoaderGetTimestampOfPlayhead(bpy.types.Operator):
         return {"FINISHED"}
 
 
+def get_frame_rate():
+    return bpy.context.scene.render.fps / bpy.context.scene.render.fps_base
+
+
+def timedelta_to_frame(delta: datetime.timedelta, frame_rate):
+    seconds = max(0, delta.total_seconds())
+    return seconds * frame_rate
+
+
+class SrtLoaderReadSrtFile(bpy.types.Operator):
+    bl_idname = "srt_loader.read_srt"
+    bl_label = "字幕ファイルを読み込む"
+    bl_description = "字幕ファイルを読み込む"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        if not srtloarder_settings.srt_file:
+            return False
+        else:
+            return True
+
+    def load_jimaku(self, srt_path, jimaku_data):
+        jimaku_data.list.clear()
+        items = my_srt.read_srt_file(srt_path)
+        fps = get_frame_rate()
+        for item in items:
+            obj = jimaku_data.list.add()
+            obj.no = item["no"]
+            obj.text = "\n".join(item["lines"])
+            obj.start_frame = timedelta_to_frame(item["time_info"]["start"], fps)
+            diff = item["time_info"]["end"] - item["time_info"]["start"]
+            obj.frame_duration = timedelta_to_frame(diff, fps)
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        srt_file = bpy.data.objects[0].srtloarder_settings.srt_file
+        if not srt_file:
+            self.report(
+                type={"WARNING"},
+                message="srtファイルが未指定",
+            )
+            return {"CANCELLED"}
+        srt_path = bpy.path.abspath(srt_file)
+        if not os.path.isfile(srt_path):
+            self.report(
+                type={"WARNING"},
+                message=f"srtファイル({srt_path})が存在しません",
+            )
+            return {"CANCELLED"}
+
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        self.load_jimaku(srt_path, srtloarder_jimaku)
+        return {"FINISHED"}
+
+
+class SrtLoaderEditJimaku(bpy.types.Operator):
+    bl_idname = "srt_loader.edit_jimaku"
+    bl_label = "編集"
+    bl_description = "字幕テキストを編集する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    win_count: bpy.props.IntProperty(name="window counts", default=1)
+    textdata_name = "edit_jimaku"
+
+    def modal(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        if len(context.window_manager.windows) < self.win_count:
+            srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+            srtloarder_jimaku.jimaku_editing = False
+            return {"FINISHED"}
+        return {"RUNNING_MODAL"}
+
+    def invoke(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        context.window_manager.modal_handler_add(self)
+
+        bpy.ops.wm.window_new()
+        new_win = context.window_manager.windows[-1]
+        area = new_win.screen.areas[-1]
+        area.type = "TEXT_EDITOR"
+
+        self.win_count = len(context.window_manager.windows)
+
+        if self.textdata_name in bpy.data.texts.keys():
+            area.spaces[0].text = bpy.data.texts[self.textdata_name]
+        else:
+            area.spaces[0].text = bpy.data.texts.new(name=self.textdata_name)
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+        area.spaces[0].text.from_string(jimaku.text)
+        with bpy.context.temp_override(area=area):
+            print(
+                f"bpy.context.space_data.show_region_ui: {bpy.context.space_data.show_region_ui}"
+            )
+            bpy.ops.text.jump(line=1)
+            bpy.context.space_data.show_region_ui = True
+        srtloarder_jimaku.jimaku_editing = True
+        return {"RUNNING_MODAL"}
+
+
+class SrtLoaderSaveJimaku(bpy.types.Operator):
+    bl_idname = "srt_loader.save_jimaku"
+    bl_label = "保存"
+    bl_description = "字幕テキストを保存する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        return context.space_data.type == "TEXT_EDITOR"
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        win = context.window
+        area = win.screen.areas[-1]
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+        jimaku.text = area.spaces[0].text.as_string()
+        srtloarder_jimaku.jimaku_editing = False
+        bpy.ops.wm.window_close()
+        return {"FINISHED"}
+
+
+class SrtLoaderCancelJimaku(bpy.types.Operator):
+    bl_idname = "srt_loader.cancel_jimaku"
+    bl_label = "キャンセル"
+    bl_description = "字幕テキストを保存しない"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        return context.space_data.type == "TEXT_EDITOR"
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        srtloarder_jimaku.jimaku_editing = False
+        bpy.ops.wm.window_close()
+        return {"FINISHED"}
+
+
 class_list = [
     # SrtLoaderImportImages,
     # SrtLoaderRemoveImportedImages,
@@ -207,4 +346,8 @@ class_list = [
     # SrtLoaderRemoveItem,
     # SrtLoaderSelectItem,
     StrLoaderGetTimestampOfPlayhead,
+    SrtLoaderReadSrtFile,
+    SrtLoaderEditJimaku,
+    SrtLoaderSaveJimaku,
+    SrtLoaderCancelJimaku,
 ]

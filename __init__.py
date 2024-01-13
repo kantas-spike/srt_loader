@@ -52,6 +52,62 @@ class SourcePanel(SrtLoaderPanelBase, bpy.types.Panel):
         layout = self.layout
         layout_property_row(layout, "Srt File", srtloarder_settings, "srt_file")
         layout_property_row(layout, "Image Dir", srtloarder_settings, "image_dir")
+        row = layout.row()
+        row.operator(ops.SrtLoaderReadSrtFile.bl_idname, text="読み込み")
+
+
+class JimakuPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "字幕"
+    bl_idname = "SRTLOADER_PT_Jimaku"
+
+    def draw(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        layout = self.layout
+        row = layout.row()
+        row.template_list(
+            JimakuList.bl_idname,
+            "",
+            srtloarder_jimaku,
+            "list",
+            srtloarder_jimaku,
+            "index",
+        )
+        if len(srtloarder_jimaku.list) > 0:
+            cur_idx = srtloarder_jimaku.index
+            jimaku = srtloarder_jimaku.list[cur_idx]
+
+            layout = self.layout
+            layout_property_row(layout, "No.", jimaku, "no")
+            row = layout.row(align=True)
+            row.alignment = "LEFT"
+            row.label(text="テキスト")
+            for txt in jimaku.text.split("\n"):
+                row = layout.split(factor=0.05)
+                row.label(text="")
+                row.label(text=txt)
+            row = layout.row(align=True)
+            row.alignment = "RIGHT"
+            row.operator(ops.SrtLoaderEditJimaku.bl_idname)
+            # row.prop(jimaku, "text", text="", expand=True)
+
+
+class JimakuEditor(bpy.types.Panel):
+    bl_space_type = "TEXT_EDITOR"
+    bl_region_type = "UI"
+    bl_category = "Text"
+    bl_label = "字幕編集"
+    bl_idname = "SRTLOADER_PT_JimakuEditor"
+
+    @classmethod
+    def poll(cls, context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        return srtloarder_jimaku.jimaku_editing
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column()
+        col.operator(ops.SrtLoaderSaveJimaku.bl_idname)
+        col.operator(ops.SrtLoaderCancelJimaku.bl_idname)
 
 
 class DefaultSettingsPanel(SrtLoaderPanelBase, bpy.types.Panel):
@@ -274,6 +330,25 @@ class DefaultBoxStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
         )
 
 
+class JimakuList(bpy.types.UIList):
+    bl_idname = "SRTLOADER_UL_Jimaku"
+
+    def draw_item(
+        self,
+        context: Context | None,
+        layout: UILayout,
+        data: Any | None,
+        item: Any | None,
+        icon: int | None,
+        active_data: Any,
+        active_property: str,
+        index: Any | None = 0,
+        flt_flag: Any | None = 0,
+    ):
+        layout.alignment = "LEFT"
+        layout.label(text=f"{'{:>2}'.format(item.no)}:  {item.text}")
+
+
 class SrtLoaderPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
 
@@ -297,6 +372,8 @@ classes = (
     + ops.class_list
     + [
         SourcePanel,
+        JimakuPanel,
+        JimakuEditor,
         SrtLoaderPreferences,
         DefaultSettingsPanel,
         DefaultStylesPanel,
@@ -307,6 +384,7 @@ classes = (
         DefaultBordersStyle2Panel,
         DefaultShadowStylesPanel,
         DefaultBoxStylesPanel,
+        JimakuList,
     ]
 )
 
@@ -315,7 +393,7 @@ def add_props():
     bpy.types.Object.srtloarder_settings = bpy.props.PointerProperty(
         type=props.SrtLoaderProperties
     )
-    bpy.types.Object.srtloarder_list = bpy.props.PointerProperty(
+    bpy.types.Object.srtloarder_jimaku = bpy.props.PointerProperty(
         type=props.SrtLoaderCurrentJimakuProperties
     )
     # print(len(bpy.data.objects))
@@ -324,7 +402,7 @@ def add_props():
 
 def remove_props():
     del bpy.types.Object.srtloarder_settings
-    del bpy.types.Object.srtloarder_list
+    del bpy.types.Object.srtloarder_jimaku
 
 
 def register():
