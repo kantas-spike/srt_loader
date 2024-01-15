@@ -151,8 +151,8 @@ class SrtLoaderJimakuStylePorperties(bpy.types.PropertyGroup):
 class SrtLoaderJimakuProperties(bpy.types.PropertyGroup):
     no: bpy.props.IntProperty(default=0)
     text: bpy.props.StringProperty(default="Text")
-    start_frame: bpy.props.FloatProperty(default=1, min=1, precision=1)
-    frame_duration: bpy.props.FloatProperty(default=120, min=1, precision=1)
+    start_frame: bpy.props.FloatProperty(default=1, min=1, precision=0)
+    frame_duration: bpy.props.FloatProperty(default=120, min=1, precision=0)
     settings: bpy.props.PointerProperty(type=SrtLoaderJimakuSettingsPorperties)
     styles: bpy.props.PointerProperty(type=SrtLoaderJimakuStylePorperties)
 
