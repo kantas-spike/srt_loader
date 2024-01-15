@@ -4,14 +4,17 @@ if "bpy" in locals():
     imp.reload(my_srt)
     imp.reload(props)
     imp.reload(ops)
+    imp.reload(utils)
 else:
     from . import my_srt
     from . import props
     from . import ops
+    from . import utils
 
 from typing import Any
 import bpy
 from bpy.types import Context, UILayout
+from bpy.utils import smpte_from_frame
 
 
 bl_info = {
@@ -72,23 +75,369 @@ class JimakuPanel(SrtLoaderPanelBase, bpy.types.Panel):
             srtloarder_jimaku,
             "index",
         )
-        if len(srtloarder_jimaku.list) > 0:
-            cur_idx = srtloarder_jimaku.index
-            jimaku = srtloarder_jimaku.list[cur_idx]
 
-            layout = self.layout
-            layout_property_row(layout, "No.", jimaku, "no")
-            row = layout.row(align=True)
-            row.alignment = "LEFT"
-            row.label(text="テキスト")
-            for txt in jimaku.text.split("\n"):
-                row = layout.split(factor=0.05)
-                row.label(text="")
-                row.label(text=txt)
-            row = layout.row(align=True)
-            row.alignment = "RIGHT"
-            row.operator(ops.SrtLoaderEditJimaku.bl_idname)
-            # row.prop(jimaku, "text", text="", expand=True)
+
+class JimakuTextAndTimePanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "テキストと時間"
+    bl_idname = "SRTLOADER_PT_JimakuTextAndTime"
+    bl_parent_id = "SRTLOADER_PT_Jimaku"
+
+    def draw(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+
+        layout = self.layout
+        layout_property_row(layout, "No.", jimaku, "no", factor=0.2)
+        row = layout.row(align=True)
+        row.separator()
+        split = layout.split(factor=0.2, align=True)
+        col = split.column(align=True)
+        col.alignment = "RIGHT"
+        col.label(text="テキスト")
+        col = split.column(align=True)
+        for txt in jimaku.text.split("\n"):
+            col.label(text=txt)
+        split = layout.split(factor=0.2, align=True)
+        _ = split.column(align=True)
+        col = split.column(align=True)
+        col.operator(ops.SrtLoaderEditJimaku.bl_idname)
+        row = layout.row(align=True)
+        row.separator()
+
+        start_frame = jimaku.start_frame
+        frame_duration = jimaku.frame_duration
+        row = layout.row(align=True)
+        split = row.split(factor=0.2)
+        split.alignment = "RIGHT"
+        split.label(text="Start")
+        split.prop(
+            jimaku,
+            "start_frame",
+            text=smpte_from_frame(start_frame),
+        )
+        row = layout.row(align=True)
+        split = row.split(factor=0.2)
+        split.alignment = "RIGHT"
+        split.label(text="Duration")
+        split.prop(
+            jimaku,
+            "frame_duration",
+            text=smpte_from_frame(frame_duration),
+        )
+
+
+class JimakuSettingsPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "字幕設定"
+    bl_idname = "SRTLOADER_PT_JimakuSettings"
+    bl_parent_id = "SRTLOADER_PT_Jimaku"
+
+    def draw_header(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+        row = self.layout.row()
+        row.prop(jimaku.settings, "useJimakuSettings", text="")
+
+    def draw(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+
+        layout = self.layout
+        layout.enabled = jimaku.settings.useJimakuSettings
+
+        layout_property_row(
+            layout, "Channel No.", jimaku.settings.settings, "channel_no"
+        )
+        layout_property_row(
+            layout, "Image Offset X", jimaku.settings.settings, "offset_x"
+        )
+        layout_property_row(
+            layout, "Image Offset Y", jimaku.settings.settings, "offset_y"
+        )
+
+
+class JimakuStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "字幕スタイル"
+    bl_idname = "SRTLOADER_PT_JimakuStyles"
+    bl_parent_id = "SRTLOADER_PT_Jimaku"
+
+    def draw_header(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+        row = self.layout.row()
+        row.prop(jimaku.styles, "useJimakuStyle", text="")
+
+    def draw(self, context: Context):
+        pass
+
+
+class JimakuImageStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "画像スタイル"
+    bl_idname = "SRTLOADER_PT_JimakuImageStyles"
+    bl_parent_id = "SRTLOADER_PT_JimakuStyles"
+
+    def draw(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+
+        layout = self.layout
+        layout.enabled = jimaku.styles.useJimakuStyle
+        layout_property_row(
+            layout, "padding x", jimaku.styles.styles.image, "padding_x"
+        )
+        layout_property_row(
+            layout, "padding y", jimaku.styles.styles.image, "padding_y"
+        )
+
+
+class JimakuTextStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "テキストスタイル"
+    bl_idname = "SRTLOADER_PT_JimakuTextStyles"
+    bl_parent_id = "SRTLOADER_PT_JimakuStyles"
+
+    def draw(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+
+        layout = self.layout
+        layout.enabled = jimaku.styles.useJimakuStyle
+        layout_property_row(
+            layout, "font family", jimaku.styles.styles.text, "font_family"
+        )
+        layout_property_row(layout, "font size", jimaku.styles.styles.text, "size")
+        layout_property_row(layout, "font color", jimaku.styles.styles.text, "color")
+        layout_property_row(layout, "text align", jimaku.styles.styles.text, "align")
+        layout_property_row(
+            layout, "line space", jimaku.styles.styles.text, "line_space_rate"
+        )
+
+
+class JimakuBordersStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "縁取りスタイル"
+    bl_idname = "SRTLOADER_PT_JimakuBordersStyles"
+    bl_parent_id = "SRTLOADER_PT_JimakuStyles"
+
+    def draw(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+
+        layout = self.layout
+        layout.enabled = jimaku.styles.useJimakuStyle
+
+        layout_property_row(
+            layout,
+            "縁取り数",
+            jimaku.styles.styles.borders,
+            "number_of_borders",
+        )
+
+
+class JimakuBordersStyle1Panel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "縁取り1"
+    bl_idname = "SRTLOADER_PT_JimakuBorder1Styles"
+    bl_parent_id = "SRTLOADER_PT_JimakuBordersStyles"
+
+    def draw(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+        borders = jimaku.styles.styles.borders
+        number_of_borders = borders.number_of_borders
+
+        style = borders.style1
+        layout = self.layout
+        layout.enabled = jimaku.styles.useJimakuStyle and number_of_borders >= 1
+
+        layout_property_row(
+            layout,
+            "縁取り色",
+            style,
+            "color",
+        )
+        layout_property_row(
+            layout,
+            "縁取りサイズ",
+            style,
+            "rate",
+        )
+        layout_property_row(
+            layout,
+            "ぼかし幅",
+            style,
+            "feather",
+        )
+
+
+class JimakuBordersStyle2Panel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "縁取り2"
+    bl_idname = "SRTLOADER_PT_JimakuBorder2Styles"
+    bl_parent_id = "SRTLOADER_PT_JimakuBordersStyles"
+
+    def draw(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+        borders = jimaku.styles.styles.borders
+        number_of_borders = borders.number_of_borders
+
+        style = borders.style2
+        layout = self.layout
+        layout.enabled = jimaku.styles.useJimakuStyle and number_of_borders >= 2
+
+        layout_property_row(
+            layout,
+            "縁取り色",
+            style,
+            "color",
+        )
+        layout_property_row(
+            layout,
+            "縁取りサイズ",
+            style,
+            "rate",
+        )
+        layout_property_row(
+            layout,
+            "ぼかし幅",
+            style,
+            "feather",
+        )
+
+
+class JimakuShadowStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "影スタイル"
+    bl_idname = "SRTLOADER_PT_JimakuShadowStyles"
+    bl_parent_id = "SRTLOADER_PT_JimakuStyles"
+
+    def draw_header(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+        shadow = jimaku.styles.styles.shadow
+        layout = self.layout
+        layout.enabled = jimaku.styles.useJimakuStyle
+        layout.prop(shadow, "enabled", text="")
+
+    def draw(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+        shadow = jimaku.styles.styles.shadow
+        layout = self.layout
+        layout.enabled = jimaku.styles.useJimakuStyle and shadow.enabled
+        layout_property_row(
+            layout,
+            "影の色",
+            shadow,
+            "color",
+        )
+        layout_property_row(
+            layout,
+            "Offset X",
+            shadow,
+            "offset_x",
+        )
+        layout_property_row(
+            layout,
+            "Offset Y",
+            shadow,
+            "offset_y",
+        )
+        layout_property_row(
+            layout,
+            "ぼかし半径",
+            shadow,
+            "blur_radius",
+        )
+
+
+class JimakuBoxStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "BOXスタイル"
+    bl_idname = "SRTLOADER_PT_JimakuBoxStyles"
+    bl_parent_id = "SRTLOADER_PT_JimakuStyles"
+
+    def draw_header(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+        box = jimaku.styles.styles.box
+        layout = self.layout
+        layout.enabled = jimaku.styles.useJimakuStyle
+        self.layout.prop(box, "enabled", text="")
+
+    def draw(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        if len(srtloarder_jimaku.list) <= 0:
+            return
+
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+        box = jimaku.styles.styles.box
+        layout = self.layout
+        layout.enabled = jimaku.styles.useJimakuStyle and box.enabled
+        layout_property_row(
+            layout,
+            "BOXの色",
+            box,
+            "color",
+        )
+        layout_property_row(
+            layout,
+            "Padding X",
+            box,
+            "padding_x",
+        )
+        layout_property_row(
+            layout,
+            "Padding Y",
+            box,
+            "padding_y",
+        )
 
 
 class JimakuEditor(bpy.types.Panel):
@@ -373,6 +722,16 @@ classes = (
     + [
         SourcePanel,
         JimakuPanel,
+        JimakuTextAndTimePanel,
+        JimakuSettingsPanel,
+        JimakuStylesPanel,
+        JimakuImageStylesPanel,
+        JimakuTextStylesPanel,
+        JimakuBordersStylesPanel,
+        JimakuBordersStyle1Panel,
+        JimakuBordersStyle2Panel,
+        JimakuShadowStylesPanel,
+        JimakuBoxStylesPanel,
         JimakuEditor,
         SrtLoaderPreferences,
         DefaultSettingsPanel,

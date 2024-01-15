@@ -1,11 +1,11 @@
 from typing import Set
 import bpy
 import os
-import uuid
 import datetime
 
 from bpy.types import Context, Event
 from . import my_srt
+from . import utils
 
 
 # class SrtLoaderRemoveImportedImages(bpy.types.Operator):
@@ -188,7 +188,7 @@ class StrLoaderGetTimestampOfPlayhead(bpy.types.Operator):
         )
 
     def execute(self, context):
-        frame_rate = get_frame_rate()
+        frame_rate = utils.get_frame_rate()
         cur_frame = bpy.context.scene.frame_current
         delta = datetime.timedelta(seconds=(cur_frame / frame_rate))
         timestamp = self.format_srt_timestamp(delta)
@@ -198,15 +198,6 @@ class StrLoaderGetTimestampOfPlayhead(bpy.types.Operator):
         self.report({"INFO"}, timestamp)
         context.window_manager.clipboard = timestamp
         return {"FINISHED"}
-
-
-def get_frame_rate():
-    return bpy.context.scene.render.fps / bpy.context.scene.render.fps_base
-
-
-def timedelta_to_frame(delta: datetime.timedelta, frame_rate):
-    seconds = max(0, delta.total_seconds())
-    return seconds * frame_rate
 
 
 class SrtLoaderReadSrtFile(bpy.types.Operator):
@@ -226,14 +217,14 @@ class SrtLoaderReadSrtFile(bpy.types.Operator):
     def load_jimaku(self, srt_path, jimaku_data):
         jimaku_data.list.clear()
         items = my_srt.read_srt_file(srt_path)
-        fps = get_frame_rate()
+        fps = utils.get_frame_rate()
         for item in items:
             obj = jimaku_data.list.add()
             obj.no = item["no"]
             obj.text = "\n".join(item["lines"])
-            obj.start_frame = timedelta_to_frame(item["time_info"]["start"], fps)
+            obj.start_frame = utils.timedelta_to_frame(item["time_info"]["start"], fps)
             diff = item["time_info"]["end"] - item["time_info"]["start"]
-            obj.frame_duration = timedelta_to_frame(diff, fps)
+            obj.frame_duration = utils.timedelta_to_frame(diff, fps)
 
     def execute(self, context: Context) -> Set[str] | Set[int]:
         srt_file = bpy.data.objects[0].srtloarder_settings.srt_file
