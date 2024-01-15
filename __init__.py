@@ -46,6 +46,22 @@ class SrtLoaderPanelBase:
         return context.space_data.view_type == "SEQUENCER"
 
 
+class SrtLoaderPanelJimakuBase:
+    bl_space_type = "SEQUENCE_EDITOR"
+    bl_region_type = "UI"
+    bl_category = "SRT Loader"
+    bl_parent_id = "SRTLOADER_PT_Jimaku"
+
+    @classmethod
+    def poll(cls, context):
+        if context.space_data.view_type != "SEQUENCER":
+            return False
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        if len(srtloarder_jimaku.list) <= 0:
+            return False
+        return True
+
+
 class SourcePanel(SrtLoaderPanelBase, bpy.types.Panel):
     bl_label = "Source"
     bl_idname = "SRTLOADER_PT_Source"
@@ -77,15 +93,12 @@ class JimakuPanel(SrtLoaderPanelBase, bpy.types.Panel):
         )
 
 
-class JimakuTextAndTimePanel(SrtLoaderPanelBase, bpy.types.Panel):
+class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
     bl_label = "テキストと時間"
     bl_idname = "SRTLOADER_PT_JimakuTextAndTime"
-    bl_parent_id = "SRTLOADER_PT_Jimaku"
 
     def draw(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-        if len(srtloarder_jimaku.list) <= 0:
-            return
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
 
@@ -129,16 +142,12 @@ class JimakuTextAndTimePanel(SrtLoaderPanelBase, bpy.types.Panel):
         )
 
 
-class JimakuSettingsPanel(SrtLoaderPanelBase, bpy.types.Panel):
+class JimakuSettingsPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
     bl_label = "字幕設定"
     bl_idname = "SRTLOADER_PT_JimakuSettings"
-    bl_parent_id = "SRTLOADER_PT_Jimaku"
 
     def draw_header(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-
-        if len(srtloarder_jimaku.list) <= 0:
-            return
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
@@ -147,9 +156,6 @@ class JimakuSettingsPanel(SrtLoaderPanelBase, bpy.types.Panel):
 
     def draw(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-
-        if len(srtloarder_jimaku.list) <= 0:
-            return
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
@@ -168,16 +174,12 @@ class JimakuSettingsPanel(SrtLoaderPanelBase, bpy.types.Panel):
         )
 
 
-class JimakuStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+class JimakuStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
     bl_label = "字幕スタイル"
     bl_idname = "SRTLOADER_PT_JimakuStyles"
-    bl_parent_id = "SRTLOADER_PT_Jimaku"
 
     def draw_header(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-
-        if len(srtloarder_jimaku.list) <= 0:
-            return
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
@@ -188,16 +190,13 @@ class JimakuStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
         pass
 
 
-class JimakuImageStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+class JimakuImageStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
     bl_label = "画像スタイル"
     bl_idname = "SRTLOADER_PT_JimakuImageStyles"
     bl_parent_id = "SRTLOADER_PT_JimakuStyles"
 
     def draw(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-
-        if len(srtloarder_jimaku.list) <= 0:
-            return
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
@@ -212,15 +211,13 @@ class JimakuImageStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
         )
 
 
-class JimakuTextStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+class JimakuTextStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
     bl_label = "テキストスタイル"
     bl_idname = "SRTLOADER_PT_JimakuTextStyles"
     bl_parent_id = "SRTLOADER_PT_JimakuStyles"
 
     def draw(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-        if len(srtloarder_jimaku.list) <= 0:
-            return
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
@@ -238,15 +235,13 @@ class JimakuTextStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
         )
 
 
-class JimakuBordersStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+class JimakuBordersStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
     bl_label = "縁取りスタイル"
     bl_idname = "SRTLOADER_PT_JimakuBordersStyles"
     bl_parent_id = "SRTLOADER_PT_JimakuStyles"
 
     def draw(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-        if len(srtloarder_jimaku.list) <= 0:
-            return
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
@@ -262,15 +257,13 @@ class JimakuBordersStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
         )
 
 
-class JimakuBordersStyle1Panel(SrtLoaderPanelBase, bpy.types.Panel):
+class JimakuBordersStyle1Panel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
     bl_label = "縁取り1"
     bl_idname = "SRTLOADER_PT_JimakuBorder1Styles"
     bl_parent_id = "SRTLOADER_PT_JimakuBordersStyles"
 
     def draw(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-        if len(srtloarder_jimaku.list) <= 0:
-            return
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
@@ -301,15 +294,13 @@ class JimakuBordersStyle1Panel(SrtLoaderPanelBase, bpy.types.Panel):
         )
 
 
-class JimakuBordersStyle2Panel(SrtLoaderPanelBase, bpy.types.Panel):
+class JimakuBordersStyle2Panel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
     bl_label = "縁取り2"
     bl_idname = "SRTLOADER_PT_JimakuBorder2Styles"
     bl_parent_id = "SRTLOADER_PT_JimakuBordersStyles"
 
     def draw(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-        if len(srtloarder_jimaku.list) <= 0:
-            return
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
@@ -340,15 +331,13 @@ class JimakuBordersStyle2Panel(SrtLoaderPanelBase, bpy.types.Panel):
         )
 
 
-class JimakuShadowStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+class JimakuShadowStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
     bl_label = "影スタイル"
     bl_idname = "SRTLOADER_PT_JimakuShadowStyles"
     bl_parent_id = "SRTLOADER_PT_JimakuStyles"
 
     def draw_header(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-        if len(srtloarder_jimaku.list) <= 0:
-            return
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
@@ -359,8 +348,6 @@ class JimakuShadowStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
 
     def draw(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-        if len(srtloarder_jimaku.list) <= 0:
-            return
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
@@ -393,15 +380,13 @@ class JimakuShadowStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
         )
 
 
-class JimakuBoxStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
+class JimakuBoxStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
     bl_label = "BOXスタイル"
     bl_idname = "SRTLOADER_PT_JimakuBoxStyles"
     bl_parent_id = "SRTLOADER_PT_JimakuStyles"
 
     def draw_header(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-        if len(srtloarder_jimaku.list) <= 0:
-            return
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
@@ -412,8 +397,6 @@ class JimakuBoxStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
 
     def draw(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-        if len(srtloarder_jimaku.list) <= 0:
-            return
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
