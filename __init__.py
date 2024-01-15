@@ -92,6 +92,9 @@ class JimakuPanel(SrtLoaderPanelBase, bpy.types.Panel):
             srtloarder_jimaku,
             "index",
         )
+        row = layout.row()
+        row.operator(ops.SrtLoaderAddJimaku.bl_idname, text="追加")
+        row.operator(ops.SrtLoaderRemoveJimaku.bl_idname, text="削除")
 
 
 class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
@@ -104,9 +107,13 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         jimaku = srtloarder_jimaku.list[cur_idx]
 
         layout = self.layout
-        layout_property_row(layout, "No.", jimaku, "no", factor=0.2)
         row = layout.row(align=True)
+        split = row.split(factor=0.2)
+        split.alignment = "RIGHT"
+        split.label(text="No.")
+        split.label(text=str(jimaku.no))
         row.separator()
+        row = layout.row(align=True)
         split = layout.split(factor=0.2, align=True)
         col = split.column(align=True)
         col.alignment = "RIGHT"

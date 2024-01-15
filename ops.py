@@ -353,6 +353,50 @@ class SrtLoaderCancelJimaku(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SrtLoaderAddJimaku(bpy.types.Operator):
+    bl_idname = "srt_loader.add_jimaku"
+    bl_label = "字幕情報の追加"
+    bl_description = "字幕情報を追加する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        if not srtloarder_settings.srt_file:
+            return False
+        else:
+            return True
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+        item = jimaku_list.add()
+        item.no = len(jimaku_list)
+        return {"FINISHED"}
+
+
+class SrtLoaderRemoveJimaku(bpy.types.Operator):
+    bl_idname = "srt_loader.remove_jimaku"
+    bl_label = "字幕情報の削除"
+    bl_description = "字幕情報を削除する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        if not srtloarder_settings.srt_file:
+            return False
+        else:
+            jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+            return len(jimaku_list) > 0
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+        idx = bpy.data.objects[0].srtloarder_jimaku.index
+        jimaku_list.remove(idx)
+        bpy.data.objects[0].srtloarder_jimaku.index = min(len(jimaku_list) - 1, idx)
+        return {"FINISHED"}
+
+
 class_list = [
     # SrtLoaderImportImages,
     # SrtLoaderRemoveImportedImages,
@@ -365,4 +409,6 @@ class_list = [
     SrtLoaderEditJimaku,
     SrtLoaderSaveJimaku,
     SrtLoaderCancelJimaku,
+    SrtLoaderAddJimaku,
+    SrtLoaderRemoveJimaku,
 ]
