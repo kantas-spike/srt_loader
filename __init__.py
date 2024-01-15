@@ -73,6 +73,7 @@ class SourcePanel(SrtLoaderPanelBase, bpy.types.Panel):
         layout_property_row(layout, "Image Dir", srtloarder_settings, "image_dir")
         row = layout.row()
         row.operator(ops.SrtLoaderReadSrtFile.bl_idname, text="読み込み")
+        row.operator(ops.SrtLoaderResetSrtFile.bl_idname, text="字幕情報の破棄")
 
 
 class JimakuPanel(SrtLoaderPanelBase, bpy.types.Panel):

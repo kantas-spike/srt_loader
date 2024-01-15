@@ -200,6 +200,29 @@ class StrLoaderGetTimestampOfPlayhead(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SrtLoaderResetSrtFile(bpy.types.Operator):
+    bl_idname = "srt_loader.reset_srt"
+    bl_label = "字幕情報の破棄"
+    bl_description = "字幕情報を破棄する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        if not srtloarder_settings.srt_file:
+            return False
+        else:
+            return len(bpy.data.objects[0].srtloarder_jimaku.list) > 0
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        if len(jimaku_list) > 0:
+            jimaku_list.clear()
+        srtloarder_settings.srt_file = ""
+        return {"FINISHED"}
+
+
 class SrtLoaderReadSrtFile(bpy.types.Operator):
     bl_idname = "srt_loader.read_srt"
     bl_label = "字幕ファイルを読み込む"
@@ -337,6 +360,7 @@ class_list = [
     # SrtLoaderRemoveItem,
     # SrtLoaderSelectItem,
     StrLoaderGetTimestampOfPlayhead,
+    SrtLoaderResetSrtFile,
     SrtLoaderReadSrtFile,
     SrtLoaderEditJimaku,
     SrtLoaderSaveJimaku,
