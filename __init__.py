@@ -74,10 +74,12 @@ class SourcePanel(SrtLoaderPanelBase, bpy.types.Panel):
         row = layout.row()
         row.operator(ops.SrtLoaderReadSrtFile.bl_idname, text="読み込み")
         row.operator(ops.SrtLoaderResetSrtFile.bl_idname, text="字幕情報の破棄")
+        row = layout.row()
+        row.operator(ops.SrtLoaderSaveSrtFile.bl_idname, text="字幕ファイルの保存")
 
 
 class JimakuPanel(SrtLoaderPanelBase, bpy.types.Panel):
-    bl_label = "字幕"
+    bl_label = "字幕情報"
     bl_idname = "SRTLOADER_PT_Jimaku"
 
     def draw(self, context: Context):
@@ -95,6 +97,8 @@ class JimakuPanel(SrtLoaderPanelBase, bpy.types.Panel):
         row = layout.row()
         row.operator(ops.SrtLoaderAddJimaku.bl_idname, text="追加")
         row.operator(ops.SrtLoaderRemoveJimaku.bl_idname, text="削除")
+        row = layout.row()
+        row.operator(ops.SrtLoaderGenerateAllJimakuImages.bl_idname, text="字幕画像の一括作成")
 
 
 class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
@@ -111,6 +115,7 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         split = row.split(factor=0.2)
         split.alignment = "RIGHT"
         split.label(text="No.")
+        split = split.split()
         split.label(text=str(jimaku.no))
         row.separator()
         row = layout.row(align=True)
@@ -148,6 +153,11 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
             "frame_duration",
             text=smpte_from_frame(frame_duration),
         )
+        row = layout.row(align=True)
+        row.separator()
+
+        row = layout.row(align=True)
+        row.operator(ops.SrtLoaderGenerateCurrentJimakuImage.bl_idname, text="字幕画像の作成")
 
 
 class JimakuSettingsPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):

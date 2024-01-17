@@ -1,16 +1,5 @@
 import bpy
-
-
-def hex_to_floatvector(hex_color: str):
-    hex_color = hex_color.lstrip("#")
-    if len(hex_color) in [3, 4]:
-        hex_color = "".join([ch * 2 for ch in hex_color])
-
-    elm_size = len(hex_color) // 2
-
-    return tuple(
-        [int(hex_color[(i * 2) : (i * 2) + 2], 16) / 255.0 for i in range(elm_size)]
-    )
+from . import utils
 
 
 class SrtLoaderSettingsProperties(bpy.types.PropertyGroup):
@@ -28,7 +17,9 @@ class SrtLoaderTextStyleProperties(bpy.types.PropertyGroup):
     font_family: bpy.props.StringProperty(default="Noto Sans JP Bold")
     size: bpy.props.IntProperty(default=48)
     color: bpy.props.FloatVectorProperty(
-        subtype="COLOR", description="文字の前景色", default=hex_to_floatvector("#40516a")
+        subtype="COLOR",
+        description="文字の前景色",
+        default=utils.hex_to_floatvector("#40516a"),
     )
     align: bpy.props.EnumProperty(
         name="Text Align",
@@ -52,7 +43,7 @@ class SrtLoaderBorderStyleProperties1(bpy.types.PropertyGroup):
         max=1.0,
         name="色",
         description="縁取りの色",
-        default=hex_to_floatvector("#FFFFFF"),
+        default=utils.hex_to_floatvector("#FFFFFF"),
     )
     rate: bpy.props.FloatProperty(
         name="サイズ", description="縁取りのサイズ(単位:文字サイズの比率)", default=0.08, min=0, max=1
@@ -67,7 +58,7 @@ class SrtLoaderBorderStyleProperties2(bpy.types.PropertyGroup):
         subtype="COLOR",
         name="色",
         description="縁取りの色",
-        default=hex_to_floatvector("#40516a"),
+        default=utils.hex_to_floatvector("#40516a"),
     )
     rate: bpy.props.FloatProperty(
         name="サイズ", description="縁取りのサイズ(単位:文字サイズの比率)", default=0.08, min=0, max=1
@@ -81,7 +72,6 @@ class SrtLoaderBorderListStyleProperties(bpy.types.PropertyGroup):
     number_of_borders: bpy.props.IntProperty(default=2, min=0, max=2)
     style1: bpy.props.PointerProperty(type=SrtLoaderBorderStyleProperties1)
     style2: bpy.props.PointerProperty(type=SrtLoaderBorderStyleProperties2)
-    index: bpy.props.IntProperty(default=0)
 
 
 class SrtLoaderShadowStyleProperties(bpy.types.PropertyGroup):
@@ -91,7 +81,7 @@ class SrtLoaderShadowStyleProperties(bpy.types.PropertyGroup):
         size=4,
         min=0,
         max=1.0,
-        default=hex_to_floatvector("#000000FF"),
+        default=utils.hex_to_floatvector("#000000FF"),
         description="影の色",
     )
     offset_x: bpy.props.IntProperty(
@@ -112,7 +102,7 @@ class SrtLoaderBoxStyleProperties(bpy.types.PropertyGroup):
         size=4,
         min=0,
         max=1.0,
-        default=hex_to_floatvector("#ccccccff"),
+        default=utils.hex_to_floatvector("#ccccccff"),
         description="字幕の背景色",
     )
     padding_x: bpy.props.IntProperty(

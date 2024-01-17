@@ -180,18 +180,11 @@ class StrLoaderGetTimestampOfPlayhead(bpy.types.Operator):
     def poll(cls, context):
         return context.space_data.view_type == "SEQUENCER"
 
-    def format_srt_timestamp(self, delta):
-        m, s = divmod(delta.seconds, 60)
-        h, m = divmod(m, 60)
-        return "{:02}:{:02}:{:02},{:03}".format(
-            h, m, s, round(delta.microseconds / 1000)
-        )
-
     def execute(self, context):
         frame_rate = utils.get_frame_rate()
         cur_frame = bpy.context.scene.frame_current
         delta = datetime.timedelta(seconds=(cur_frame / frame_rate))
-        timestamp = self.format_srt_timestamp(delta)
+        timestamp = utils.format_srt_timestamp(delta)
         print(
             f"frame_rate: {frame_rate}, cur_frame: {cur_frame}, timestamp: {timestamp}"
         )
@@ -220,6 +213,26 @@ class SrtLoaderResetSrtFile(bpy.types.Operator):
         if len(jimaku_list) > 0:
             jimaku_list.clear()
         srtloarder_settings.srt_file = ""
+        return {"FINISHED"}
+
+
+class SrtLoaderSaveSrtFile(bpy.types.Operator):
+    bl_idname = "srt_loader.save_srt"
+    bl_label = "字幕ファイルを保存"
+    bl_description = "字幕ファイルを保存する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        if not srtloarder_settings.srt_file:
+            return False
+        else:
+            return True
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        print(utils.jimakulist_to_srtdata(srtloarder_jimaku.list))
         return {"FINISHED"}
 
 
@@ -397,6 +410,50 @@ class SrtLoaderRemoveJimaku(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SrtLoaderGenerateAllJimakuImages(bpy.types.Operator):
+    bl_idname = "srt_loader.generate_all_jimaku_images"
+    bl_label = "字幕画像の一括作成"
+    bl_description = "字幕画像を一括で作成する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        if not srtloarder_settings.srt_file:
+            return False
+        elif not srtloarder_settings.image_dir:
+            return False
+        else:
+            jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+            return len(jimaku_list) > 0
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        # TODO 実装
+        return {"FINISHED"}
+
+
+class SrtLoaderGenerateCurrentJimakuImage(bpy.types.Operator):
+    bl_idname = "srt_loader.generate_current_jimaku_image"
+    bl_label = "字幕画像の作成"
+    bl_description = "現在の字幕の画像を作成する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        if not srtloarder_settings.srt_file:
+            return False
+        elif not srtloarder_settings.image_dir:
+            return False
+        else:
+            jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+            return len(jimaku_list) > 0
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        # TODO 実装
+        return {"FINISHED"}
+
+
 class_list = [
     # SrtLoaderImportImages,
     # SrtLoaderRemoveImportedImages,
@@ -406,9 +463,12 @@ class_list = [
     StrLoaderGetTimestampOfPlayhead,
     SrtLoaderResetSrtFile,
     SrtLoaderReadSrtFile,
+    SrtLoaderSaveSrtFile,
     SrtLoaderEditJimaku,
     SrtLoaderSaveJimaku,
     SrtLoaderCancelJimaku,
     SrtLoaderAddJimaku,
     SrtLoaderRemoveJimaku,
+    SrtLoaderGenerateAllJimakuImages,
+    SrtLoaderGenerateCurrentJimakuImage,
 ]
