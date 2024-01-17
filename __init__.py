@@ -3,11 +3,13 @@ if "bpy" in locals():
 
     imp.reload(my_srt)
     imp.reload(props)
+    imp.reload(props_default)
     imp.reload(ops)
     imp.reload(utils)
 else:
     from . import my_srt
     from . import props
+    from . import props_default
     from . import ops
     from . import utils
 
@@ -181,15 +183,9 @@ class JimakuSettingsPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         layout = self.layout
         layout.enabled = jimaku.settings.useJimakuSettings
 
-        layout_property_row(
-            layout, "Channel No.", jimaku.settings.settings, "channel_no"
-        )
-        layout_property_row(
-            layout, "Image Offset X", jimaku.settings.settings, "offset_x"
-        )
-        layout_property_row(
-            layout, "Image Offset Y", jimaku.settings.settings, "offset_y"
-        )
+        layout_property_row(layout, "Channel No.", jimaku.settings, "channel_no")
+        layout_property_row(layout, "Image Offset X", jimaku.settings, "offset_x")
+        layout_property_row(layout, "Image Offset Y", jimaku.settings, "offset_y")
 
 
 class JimakuStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
@@ -221,12 +217,8 @@ class JimakuImageStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
         layout = self.layout
         layout.enabled = jimaku.styles.useJimakuStyle
-        layout_property_row(
-            layout, "padding x", jimaku.styles.styles.image, "padding_x"
-        )
-        layout_property_row(
-            layout, "padding y", jimaku.styles.styles.image, "padding_y"
-        )
+        layout_property_row(layout, "padding x", jimaku.styles.image, "padding_x")
+        layout_property_row(layout, "padding y", jimaku.styles.image, "padding_y")
 
 
 class JimakuTextStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
@@ -242,15 +234,11 @@ class JimakuTextStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
         layout = self.layout
         layout.enabled = jimaku.styles.useJimakuStyle
-        layout_property_row(
-            layout, "font family", jimaku.styles.styles.text, "font_family"
-        )
-        layout_property_row(layout, "font size", jimaku.styles.styles.text, "size")
-        layout_property_row(layout, "font color", jimaku.styles.styles.text, "color")
-        layout_property_row(layout, "text align", jimaku.styles.styles.text, "align")
-        layout_property_row(
-            layout, "line space", jimaku.styles.styles.text, "line_space_rate"
-        )
+        layout_property_row(layout, "font family", jimaku.styles.text, "font_family")
+        layout_property_row(layout, "font size", jimaku.styles.text, "size")
+        layout_property_row(layout, "font color", jimaku.styles.text, "color")
+        layout_property_row(layout, "text align", jimaku.styles.text, "align")
+        layout_property_row(layout, "line space", jimaku.styles.text, "line_space_rate")
 
 
 class JimakuBordersStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
@@ -270,7 +258,7 @@ class JimakuBordersStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         layout_property_row(
             layout,
             "縁取り数",
-            jimaku.styles.styles.borders,
+            jimaku.styles.borders,
             "number_of_borders",
         )
 
@@ -285,7 +273,7 @@ class JimakuBordersStyle1Panel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
-        borders = jimaku.styles.styles.borders
+        borders = jimaku.styles.borders
         number_of_borders = borders.number_of_borders
 
         style = borders.style1
@@ -322,7 +310,7 @@ class JimakuBordersStyle2Panel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
-        borders = jimaku.styles.styles.borders
+        borders = jimaku.styles.borders
         number_of_borders = borders.number_of_borders
 
         style = borders.style2
@@ -359,7 +347,7 @@ class JimakuShadowStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
-        shadow = jimaku.styles.styles.shadow
+        shadow = jimaku.styles.shadow
         layout = self.layout
         layout.enabled = jimaku.styles.useJimakuStyle
         layout.prop(shadow, "enabled", text="")
@@ -369,7 +357,7 @@ class JimakuShadowStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
-        shadow = jimaku.styles.styles.shadow
+        shadow = jimaku.styles.shadow
         layout = self.layout
         layout.enabled = jimaku.styles.useJimakuStyle and shadow.enabled
         layout_property_row(
@@ -408,7 +396,7 @@ class JimakuBoxStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
-        box = jimaku.styles.styles.box
+        box = jimaku.styles.box
         layout = self.layout
         layout.enabled = jimaku.styles.useJimakuStyle
         self.layout.prop(box, "enabled", text="")
@@ -418,7 +406,7 @@ class JimakuBoxStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
         cur_idx = srtloarder_jimaku.index
         jimaku = srtloarder_jimaku.list[cur_idx]
-        box = jimaku.styles.styles.box
+        box = jimaku.styles.box
         layout = self.layout
         layout.enabled = jimaku.styles.useJimakuStyle and box.enabled
         layout_property_row(
@@ -719,6 +707,7 @@ def menu_fn(self, context):
 
 classes = (
     props.class_list
+    + props_default.class_list
     + ops.class_list
     + [
         SourcePanel,
@@ -751,7 +740,7 @@ classes = (
 
 def add_props():
     bpy.types.Object.srtloarder_settings = bpy.props.PointerProperty(
-        type=props.SrtLoaderProperties
+        type=props_default.SrtLoaderProperties
     )
     bpy.types.Object.srtloarder_jimaku = bpy.props.PointerProperty(
         type=props.SrtLoaderCurrentJimakuProperties

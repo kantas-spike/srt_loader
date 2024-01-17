@@ -2,12 +2,18 @@ import bpy
 from . import utils
 
 
-class SrtLoaderImageStyleProperties(bpy.types.PropertyGroup):
+class SrtLoaderDefaultSettingsProperties(bpy.types.PropertyGroup):
+    channel_no: bpy.props.IntProperty(default=1, min=1, max=128)
+    offset_x: bpy.props.FloatProperty(default=0)
+    offset_y: bpy.props.FloatProperty(default=-400)
+
+
+class SrtLoaderDefaultImageStyleProperties(bpy.types.PropertyGroup):
     padding_x: bpy.props.IntProperty(default=20)
     padding_y: bpy.props.IntProperty(default=20)
 
 
-class SrtLoaderTextStyleProperties(bpy.types.PropertyGroup):
+class SrtLoaderDefaultTextStyleProperties(bpy.types.PropertyGroup):
     font_family: bpy.props.StringProperty(default="Noto Sans JP Bold")
     size: bpy.props.IntProperty(default=48)
     color: bpy.props.FloatVectorProperty(
@@ -30,7 +36,7 @@ class SrtLoaderTextStyleProperties(bpy.types.PropertyGroup):
     )
 
 
-class SrtLoaderBorderStyleProperties1(bpy.types.PropertyGroup):
+class SrtLoaderDefaultBorderStyleProperties1(bpy.types.PropertyGroup):
     color: bpy.props.FloatVectorProperty(
         subtype="COLOR",
         min=0,
@@ -47,7 +53,7 @@ class SrtLoaderBorderStyleProperties1(bpy.types.PropertyGroup):
     )
 
 
-class SrtLoaderBorderStyleProperties2(bpy.types.PropertyGroup):
+class SrtLoaderDefaultBorderStyleProperties2(bpy.types.PropertyGroup):
     color: bpy.props.FloatVectorProperty(
         subtype="COLOR",
         name="色",
@@ -62,13 +68,13 @@ class SrtLoaderBorderStyleProperties2(bpy.types.PropertyGroup):
     )
 
 
-class SrtLoaderBorderListStyleProperties(bpy.types.PropertyGroup):
+class SrtLoaderDefaultBorderListStyleProperties(bpy.types.PropertyGroup):
     number_of_borders: bpy.props.IntProperty(default=2, min=0, max=2)
-    style1: bpy.props.PointerProperty(type=SrtLoaderBorderStyleProperties1)
-    style2: bpy.props.PointerProperty(type=SrtLoaderBorderStyleProperties2)
+    style1: bpy.props.PointerProperty(type=SrtLoaderDefaultBorderStyleProperties1)
+    style2: bpy.props.PointerProperty(type=SrtLoaderDefaultBorderStyleProperties2)
 
 
-class SrtLoaderShadowStyleProperties(bpy.types.PropertyGroup):
+class SrtLoaderDefaultShadowStyleProperties(bpy.types.PropertyGroup):
     enabled: bpy.props.BoolProperty(name="利用する", default=False, description="影を利用する")
     color: bpy.props.FloatVectorProperty(
         subtype="COLOR",
@@ -89,7 +95,7 @@ class SrtLoaderShadowStyleProperties(bpy.types.PropertyGroup):
     )
 
 
-class SrtLoaderBoxStyleProperties(bpy.types.PropertyGroup):
+class SrtLoaderDefaultBoxStyleProperties(bpy.types.PropertyGroup):
     enabled: bpy.props.BoolProperty(name="利用する", default=False, description="ボックスを利用する")
     color: bpy.props.FloatVectorProperty(
         subtype="COLOR",
@@ -107,47 +113,30 @@ class SrtLoaderBoxStyleProperties(bpy.types.PropertyGroup):
     )
 
 
-class SrtLoaderJimakuSettingsPorperties(bpy.types.PropertyGroup):
-    useJimakuSettings: bpy.props.BoolProperty(default=False)
-    channel_no: bpy.props.IntProperty(default=1, min=1, max=128)
-    offset_x: bpy.props.FloatProperty(default=0)
-    offset_y: bpy.props.FloatProperty(default=-400)
+class SrtLoaderDefaultStylesProperties(bpy.types.PropertyGroup):
+    image: bpy.props.PointerProperty(type=SrtLoaderDefaultImageStyleProperties)
+    text: bpy.props.PointerProperty(type=SrtLoaderDefaultTextStyleProperties)
+    borders: bpy.props.PointerProperty(type=SrtLoaderDefaultBorderListStyleProperties)
+    shadow: bpy.props.PointerProperty(type=SrtLoaderDefaultShadowStyleProperties)
+    box: bpy.props.PointerProperty(type=SrtLoaderDefaultBoxStyleProperties)
 
 
-class SrtLoaderJimakuStylePorperties(bpy.types.PropertyGroup):
-    useJimakuStyle: bpy.props.BoolProperty(default=False)
-    image: bpy.props.PointerProperty(type=SrtLoaderImageStyleProperties)
-    text: bpy.props.PointerProperty(type=SrtLoaderTextStyleProperties)
-    borders: bpy.props.PointerProperty(type=SrtLoaderBorderListStyleProperties)
-    shadow: bpy.props.PointerProperty(type=SrtLoaderShadowStyleProperties)
-    box: bpy.props.PointerProperty(type=SrtLoaderBoxStyleProperties)
-
-
-class SrtLoaderJimakuProperties(bpy.types.PropertyGroup):
-    no: bpy.props.IntProperty(default=0)
-    text: bpy.props.StringProperty(default="Text")
-    start_frame: bpy.props.FloatProperty(default=1, min=1, precision=0)
-    frame_duration: bpy.props.FloatProperty(default=120, min=1, precision=0)
-    settings: bpy.props.PointerProperty(type=SrtLoaderJimakuSettingsPorperties)
-    styles: bpy.props.PointerProperty(type=SrtLoaderJimakuStylePorperties)
-
-
-class SrtLoaderCurrentJimakuProperties(bpy.types.PropertyGroup):
-    index: bpy.props.IntProperty(default=0)
-    list: bpy.props.CollectionProperty(type=SrtLoaderJimakuProperties)
-    jimaku_editing: bpy.props.BoolProperty(default=False)
+class SrtLoaderProperties(bpy.types.PropertyGroup):
+    srt_file: bpy.props.StringProperty(subtype="FILE_PATH")
+    image_dir: bpy.props.StringProperty(subtype="DIR_PATH")
+    settings: bpy.props.PointerProperty(type=SrtLoaderDefaultSettingsProperties)
+    styles: bpy.props.PointerProperty(type=SrtLoaderDefaultStylesProperties)
 
 
 class_list = [
-    SrtLoaderImageStyleProperties,
-    SrtLoaderTextStyleProperties,
-    SrtLoaderBorderStyleProperties1,
-    SrtLoaderBorderStyleProperties2,
-    SrtLoaderBorderListStyleProperties,
-    SrtLoaderShadowStyleProperties,
-    SrtLoaderBoxStyleProperties,
-    SrtLoaderJimakuSettingsPorperties,
-    SrtLoaderJimakuStylePorperties,
-    SrtLoaderJimakuProperties,
-    SrtLoaderCurrentJimakuProperties,
+    SrtLoaderDefaultImageStyleProperties,
+    SrtLoaderDefaultTextStyleProperties,
+    SrtLoaderDefaultBorderStyleProperties1,
+    SrtLoaderDefaultBorderStyleProperties2,
+    SrtLoaderDefaultBorderListStyleProperties,
+    SrtLoaderDefaultShadowStyleProperties,
+    SrtLoaderDefaultBoxStyleProperties,
+    SrtLoaderDefaultStylesProperties,
+    SrtLoaderDefaultSettingsProperties,
+    SrtLoaderProperties,
 ]
