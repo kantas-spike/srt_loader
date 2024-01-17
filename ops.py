@@ -225,10 +225,11 @@ class SrtLoaderSaveSrtFile(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        jimaku_data = bpy.data.objects[0].srtloarder_jimaku
         if not srtloarder_settings.srt_file:
             return False
         else:
-            return True
+            return jimaku_data.jimaku_data_changed
 
     def execute(self, context: Context) -> Set[str] | Set[int]:
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
@@ -280,6 +281,7 @@ class SrtLoaderReadSrtFile(bpy.types.Operator):
 
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
         self.load_jimaku(srt_path, srtloarder_jimaku)
+        srtloarder_jimaku.jimaku_data_changed = False
         return {"FINISHED"}
 
 
