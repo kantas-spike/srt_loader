@@ -37,40 +37,40 @@ def styles_to_json(styles):
     result["crop_area"] = {}
     result["crop_area"]["padding_x"] = styles.image.padding_x
     result["crop_area"]["padding_y"] = styles.image.padding_y
-    result["style"] = {}
-    result["style"]["text"] = {}
-    result["style"]["text"]["font_family"] = styles.text.font_family
-    result["style"]["text"]["size"] = styles.text.size
-    result["style"]["text"]["color"] = float_vector_to_hexcolor(styles.text.color)
-    result["style"]["text"]["line_space_rate"] = styles.text.line_space_rate
-    result["style"]["text"]["align"] = styles.text.align
+    result["styles"] = {}
+    result["styles"]["text"] = {}
+    result["styles"]["text"]["font_family"] = styles.text.font_family
+    result["styles"]["text"]["size"] = styles.text.size
+    result["styles"]["text"]["color"] = float_vector_to_hexcolor(styles.text.color)
+    result["styles"]["text"]["line_space_rate"] = styles.text.line_space_rate
+    result["styles"]["text"]["align"] = styles.text.align
     result["number_of_borders"] = styles.borders.number_of_borders
-    result["style"]["borders"] = []
+    result["styles"]["borders"] = []
     if styles.borders.number_of_borders >= 1:
         obj = border_to_json(styles.borders.style1)
-        result["style"]["borders"].append(obj)
+        result["styles"]["borders"].append(obj)
     if styles.borders.number_of_borders >= 2:
         obj = border_to_json(styles.borders.style2)
-        result["style"]["borders"].append(obj)
+        result["styles"]["borders"].append(obj)
 
     result["with_shadow"] = styles.shadow.enabled
-    result["style"]["shadow"] = {}
+    result["styles"]["shadow"] = {}
     if styles.shadow.enabled:
-        result["style"]["shadow"]["color"] = float_vector_to_hexcolor(
+        result["styles"]["shadow"]["color"] = float_vector_to_hexcolor(
             styles.shadow.color
         )
-        result["style"]["shadow"]["offset_x"] = styles.shadow.offset_x
-        result["style"]["shadow"]["offset_y"] = styles.shadow.offset_y
-        result["style"]["shadow"]["blur_radius"] = styles.shadow.blur_radius
-        result["style"]["shadow"]["opacity"] = styles.shadow.opacity
+        result["styles"]["shadow"]["offset_x"] = styles.shadow.offset_x
+        result["styles"]["shadow"]["offset_y"] = styles.shadow.offset_y
+        result["styles"]["shadow"]["blur_radius"] = styles.shadow.blur_radius
+        result["styles"]["shadow"]["opacity"] = styles.shadow.opacity
 
     result["with_box"] = styles.box.enabled
-    result["style"]["box"] = {}
+    result["styles"]["box"] = {}
     if styles.box.enabled:
-        result["style"]["box"]["padding_x"] = styles.box.padding_x
-        result["style"]["box"]["padding_y"] = styles.box.padding_y
-        result["style"]["box"]["color"] = float_vector_to_hexcolor(styles.box.color)
-        result["style"]["box"]["opacity"] = styles.box.opacity
+        result["styles"]["box"]["padding_x"] = styles.box.padding_x
+        result["styles"]["box"]["padding_y"] = styles.box.padding_y
+        result["styles"]["box"]["color"] = float_vector_to_hexcolor(styles.box.color)
+        result["styles"]["box"]["opacity"] = styles.box.opacity
     return result
 
 
@@ -94,7 +94,7 @@ def settings_to_json(settings):
 
 
 def update_jimaku(jimaku, json):
-    if len(json["settings"].keys()) > 0:
+    if "settings" in json:
         jimaku.settings.useJimakuSettings = True
         jimaku.settings.channel_no = json["settings"]["channel_no"]
         jimaku.settings.offset_x = json["settings"]["offset_x"]
@@ -102,31 +102,31 @@ def update_jimaku(jimaku, json):
     else:
         jimaku.settings.useJimakuSettings = False
 
-    if len(json["styles"].keys()) > 0:
+    if "styles" in json:
         jimaku.styles.useJimakuStyle = True
-        jimaku.styles.text.font_family = json["style"]["text"]["font_family"]
-        jimaku.styles.text.size = json["style"]["text"]["size"]
-        jimaku.styles.text.color = hex_to_floatvector(json["style"]["text"]["color"])
-        jimaku.styles.text.align = json["style"]["text"]["align"]
-        jimaku.styles.text.line_space_rate = json["style"]["text"]["line_space_rate"]
+        jimaku.styles.text.font_family = json["styles"]["text"]["font_family"]
+        jimaku.styles.text.size = json["styles"]["text"]["size"]
+        jimaku.styles.text.color = hex_to_floatvector(json["styles"]["text"]["color"])
+        jimaku.styles.text.align = json["styles"]["text"]["align"]
+        jimaku.styles.text.line_space_rate = json["styles"]["text"]["line_space_rate"]
         jimaku.styles.borders.number_of_borders = json["number_of_borders"]
-        if len(json["style"]["borders"]) >= 1:
-            update_border(jimaku.styles.borders.style1, json["style"]["borders"][0])
-        if len(json["style"]["borders"]) >= 2:
-            update_border(jimaku.styles.borders.style2, json["style"]["borders"][1])
+        if len(json["styles"]["borders"]) >= 1:
+            update_border(jimaku.styles.borders.style1, json["styles"]["borders"][0])
+        if len(json["styles"]["borders"]) >= 2:
+            update_border(jimaku.styles.borders.style2, json["styles"]["borders"][1])
         jimaku.styles.shadow.enabled = json["with_shadow"]
         if json["with_shadow"]:
             jimaku.styles.shadow.color = hex_to_floatvector(
-                json["style"]["shadow"]["color"]
+                json["styles"]["shadow"]["color"]
             )
-            jimaku.styles.shadow.offset_x = json["style"]["shadow"]["offset_x"]
-            jimaku.styles.shadow.offset_y = json["style"]["shadow"]["offset_y"]
-            jimaku.styles.shadow.blur_radius = json["style"]["shadow"]["blur_radius"]
-            jimaku.styles.shadow.opacity = json["style"]["shadow"]["opacity"]
+            jimaku.styles.shadow.offset_x = json["styles"]["shadow"]["offset_x"]
+            jimaku.styles.shadow.offset_y = json["styles"]["shadow"]["offset_y"]
+            jimaku.styles.shadow.blur_radius = json["styles"]["shadow"]["blur_radius"]
+            jimaku.styles.shadow.opacity = json["styles"]["shadow"]["opacity"]
         jimaku.styles.box.enabled = json["with_box"]
         if json["with_box"]:
-            jimaku.styles.box.color = hex_to_floatvector(json["style"]["box"]["color"])
-            jimaku.styles.box.opacity = json["style"]["box"]["opacity"]
+            jimaku.styles.box.color = hex_to_floatvector(json["styles"]["box"]["color"])
+            jimaku.styles.box.opacity = json["styles"]["box"]["opacity"]
     elif "crop_area" in json:
         jimaku.styles.useJimakuStyle = True
         jimaku.styles.image.padding_x = json["crop_area"]["padding_x"]
