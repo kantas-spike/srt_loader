@@ -2,6 +2,7 @@ from typing import Set
 import bpy
 import os
 import datetime
+import shutil
 
 from bpy.types import Context, Event
 from . import my_srt
@@ -234,6 +235,25 @@ class SrtLoaderSaveSrtFile(bpy.types.Operator):
     def execute(self, context: Context) -> Set[str] | Set[int]:
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
         print(utils.jimakulist_to_srtdata(srtloarder_jimaku.list))
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        output_path = bpy.path.abspath(srtloarder_settings.srt_file)
+        dir_path = os.path.dirname(output_path)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+
+        if os.path.exists(output_path):
+            # backup
+            shutil.copyfile(output_path, output_path + ".bk")
+
+        with open(output_path, mode="w") as f:
+            srt_data = utils.jimakulist_to_srtdata(srtloarder_jimaku.list)
+            for data in srt_data:
+                f.write(f"{data}\n")
+
+        self.report(
+            type={"INFO"},
+            message=f"srt_file saved: {output_path}",
+        )
         return {"FINISHED"}
 
 
@@ -262,6 +282,8 @@ class SrtLoaderReadSrtFile(bpy.types.Operator):
             obj.start_frame = utils.timedelta_to_frame(item["time_info"]["start"], fps)
             diff = item["time_info"]["end"] - item["time_info"]["start"]
             obj.frame_duration = utils.timedelta_to_frame(diff, fps)
+            if "json" in item["time_info"]:
+                utils.update_jimaku(obj, item["time_info"]["json"])
 
     def execute(self, context: Context) -> Set[str] | Set[int]:
         srt_file = bpy.data.objects[0].srtloarder_settings.srt_file
@@ -386,6 +408,7 @@ class SrtLoaderAddJimaku(bpy.types.Operator):
         jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
         item = jimaku_list.add()
         item.no = len(jimaku_list)
+        bpy.data.objects[0].srtloarder_jimaku.jimaku_data_changed = True
         return {"FINISHED"}
 
 
@@ -409,6 +432,7 @@ class SrtLoaderRemoveJimaku(bpy.types.Operator):
         idx = bpy.data.objects[0].srtloarder_jimaku.index
         jimaku_list.remove(idx)
         bpy.data.objects[0].srtloarder_jimaku.index = min(len(jimaku_list) - 1, idx)
+        bpy.data.objects[0].srtloarder_jimaku.jimaku_data_changed = True
         return {"FINISHED"}
 
 
@@ -430,6 +454,11 @@ class SrtLoaderGenerateAllJimakuImages(bpy.types.Operator):
             return len(jimaku_list) > 0
 
     def execute(self, context: Context) -> Set[str] | Set[int]:
+        addon_name = __name__.split(".")[0]
+        prefs = context.preferences
+        addon_prefs = prefs.addons[addon_name].preferences
+        gimp_path = addon_prefs.gimp_path
+        print(gimp_path)
         # TODO 実装
         return {"FINISHED"}
 
