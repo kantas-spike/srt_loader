@@ -1,6 +1,7 @@
 import datetime
 import bpy
 import json
+import os
 
 
 def get_frame_rate():
@@ -30,9 +31,9 @@ def format_srt_timestamp(delta):
     return "{:02}:{:02}:{:02},{:03}".format(h, m, s, round(delta.microseconds / 1000))
 
 
-def styles_to_json(styles):
+def styles_to_json(styles, for_jimaku=True):
     result = {}
-    if not styles.useJimakuStyle:
+    if for_jimaku and not styles.useJimakuStyle:
         return result
     result["crop_area"] = {}
     result["crop_area"]["padding_x"] = styles.image.padding_x
@@ -82,9 +83,9 @@ def border_to_json(border):
     return obj
 
 
-def settings_to_json(settings):
+def settings_to_json(settings, for_jimaku=True):
     result = {}
-    if not settings.useJimakuSettings:
+    if for_jimaku and not settings.useJimakuSettings:
         return result
     result["settings"] = {}
     result["settings"]["channel_no"] = settings.channel_no
@@ -141,10 +142,10 @@ def update_border(border, json):
     border.feather = json["feather"]
 
 
-def settings_and_styles_to_json(item):
+def settings_and_styles_to_json(item, for_jimaku=True):
     result = {}
-    result.update(settings_to_json(item.settings))
-    result.update(styles_to_json(item.styles))
+    result.update(settings_to_json(item.settings, for_jimaku))
+    result.update(styles_to_json(item.styles, for_jimaku))
     return result
 
 
@@ -186,3 +187,38 @@ def jimakulist_to_srtdata(list):
 
 def float_vector_to_hexcolor(vector):
     return "#" + "".join([format(round(f * 255), "X") for f in vector])
+
+
+def get_addon_directory():
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+def create_gimp_command_line(gimp_path, debug=False):
+    option = "-dsc" if debug else "-ids"
+    cmd = f"{gimp_path} {option} --batch-interpreter python-fu-eval --batch '-'"
+    return cmd
+
+
+def create_gimp_script(
+    subtitles,
+    config,
+    output_path,
+    default_config,
+    additional_sys_path=get_addon_directory(),
+    debug=False,
+):
+    script = f"""
+import json
+import sys
+sys.path=[{repr(additional_sys_path)}]+sys.path
+import subtitle_creator
+
+subtitles = json.loads({repr(subtitles)})
+config = json.loads({repr(config)})
+default_config = json.loads({repr(default_config)})
+output_path = {repr(output_path)}
+debug = {debug}
+
+subtitle_creator.run(subtitles, config, output_path, default_config, debug)
+"""
+    return script
