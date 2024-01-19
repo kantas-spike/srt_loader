@@ -1,0 +1,33 @@
+{
+  "with_shadow": true,
+  "number_of_borders": 2,
+  "with_box": true,
+  "crop_area": { "padding_x": 20, "padding_y": 20 },
+  "canvas": { "padding_x_rate": 1.0, "padding_y_rate": 1.0 },
+  "styles": {
+    "text": {
+      "font_family": "Noto Sans JP Bold",
+      "size": 48,
+      "color": "#40516a",
+      "line_space_rate": -0.3,
+      "align": "center"
+    },
+    "borders": [
+      { "color": "#FFFFFF", "rate": 0.08, "feather": 0 },
+      { "color": "#40516a", "rate": 0.08, "feather": 0 }
+    ],
+    "shadow": {
+      "color": "#000000",
+      "offset_x": 10,
+      "offset_y": 10,
+      "blur_radius": 15,
+      "opacity": 0.5
+    },
+    "box": {
+      "padding_x": 20,
+      "padding_y": 20,
+      "color": "#cccccc",
+      "opacity": 1.0
+    }
+  }
+}
