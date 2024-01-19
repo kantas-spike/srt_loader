@@ -249,7 +249,7 @@ class SrtLoaderSaveSrtFile(bpy.types.Operator):
             srt_data = utils.jimakulist_to_srtdata(srtloarder_jimaku.list)
             for data in srt_data:
                 f.write(f"{data}\n")
-
+        bpy.data.objects[0].srtloarder_jimaku.jimaku_data_changed = False
         self.report(
             type={"INFO"},
             message=f"srt_file saved: {output_path}",
