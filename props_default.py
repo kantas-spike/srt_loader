@@ -17,7 +17,7 @@ class SrtLoaderDefaultTextStyleProperties(bpy.types.PropertyGroup):
     font_family: bpy.props.StringProperty(default="Noto Sans JP Bold")
     size: bpy.props.IntProperty(default=48)
     color: bpy.props.FloatVectorProperty(
-        subtype="COLOR",
+        subtype="COLOR_GAMMA",
         min=0,
         max=1.0,
         description="文字の前景色",
@@ -40,7 +40,7 @@ class SrtLoaderDefaultTextStyleProperties(bpy.types.PropertyGroup):
 
 class SrtLoaderDefaultBorderStyleProperties1(bpy.types.PropertyGroup):
     color: bpy.props.FloatVectorProperty(
-        subtype="COLOR",
+        subtype="COLOR_GAMMA",
         min=0,
         max=1.0,
         name="色",
@@ -57,7 +57,7 @@ class SrtLoaderDefaultBorderStyleProperties1(bpy.types.PropertyGroup):
 
 class SrtLoaderDefaultBorderStyleProperties2(bpy.types.PropertyGroup):
     color: bpy.props.FloatVectorProperty(
-        subtype="COLOR",
+        subtype="COLOR_GAMMA",
         name="色",
         min=0,
         max=1.0,
@@ -81,7 +81,7 @@ class SrtLoaderDefaultBorderListStyleProperties(bpy.types.PropertyGroup):
 class SrtLoaderDefaultShadowStyleProperties(bpy.types.PropertyGroup):
     enabled: bpy.props.BoolProperty(name="利用する", default=False, description="影を利用する")
     color: bpy.props.FloatVectorProperty(
-        subtype="COLOR",
+        subtype="COLOR_GAMMA",
         size=4,
         min=0,
         max=1.0,
@@ -102,7 +102,7 @@ class SrtLoaderDefaultShadowStyleProperties(bpy.types.PropertyGroup):
 class SrtLoaderDefaultBoxStyleProperties(bpy.types.PropertyGroup):
     enabled: bpy.props.BoolProperty(name="利用する", default=False, description="ボックスを利用する")
     color: bpy.props.FloatVectorProperty(
-        subtype="COLOR",
+        subtype="COLOR_GAMMA",
         size=4,
         min=0,
         max=1.0,

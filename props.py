@@ -17,7 +17,7 @@ class SrtLoaderTextStyleProperties(bpy.types.PropertyGroup):
     )
     size: bpy.props.IntProperty(default=48, update=update_jimaku_property)
     color: bpy.props.FloatVectorProperty(
-        subtype="COLOR",
+        subtype="COLOR_GAMMA",
         description="文字の前景色",
         min=0,
         max=1.0,
@@ -45,7 +45,7 @@ class SrtLoaderTextStyleProperties(bpy.types.PropertyGroup):
 
 class SrtLoaderBorderStyleProperties1(bpy.types.PropertyGroup):
     color: bpy.props.FloatVectorProperty(
-        subtype="COLOR",
+        subtype="COLOR_GAMMA",
         min=0,
         max=1.0,
         name="色",
@@ -71,7 +71,7 @@ class SrtLoaderBorderStyleProperties1(bpy.types.PropertyGroup):
 
 class SrtLoaderBorderStyleProperties2(bpy.types.PropertyGroup):
     color: bpy.props.FloatVectorProperty(
-        subtype="COLOR",
+        subtype="COLOR_GAMMA",
         name="色",
         description="縁取りの色",
         min=0,
@@ -108,7 +108,7 @@ class SrtLoaderShadowStyleProperties(bpy.types.PropertyGroup):
         name="利用する", default=False, description="影を利用する", update=update_jimaku_property
     )
     color: bpy.props.FloatVectorProperty(
-        subtype="COLOR",
+        subtype="COLOR_GAMMA",
         size=4,
         min=0,
         max=1.0,
@@ -144,7 +144,7 @@ class SrtLoaderBoxStyleProperties(bpy.types.PropertyGroup):
         update=update_jimaku_property,
     )
     color: bpy.props.FloatVectorProperty(
-        subtype="COLOR",
+        subtype="COLOR_GAMMA",
         size=4,
         min=0,
         max=1.0,
