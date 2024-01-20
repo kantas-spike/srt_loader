@@ -188,7 +188,7 @@ def jimakulist_to_srtdata(list):
 
 
 def float_vector_to_hexcolor(vector):
-    return "#" + "".join([format(round(f * 255), "X") for f in vector])
+    return "#" + "".join(["{:02X}".format(round(f * 255)) for f in vector])
 
 
 def get_addon_directory():
