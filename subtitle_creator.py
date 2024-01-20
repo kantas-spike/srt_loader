@@ -116,17 +116,17 @@ def get_text_area(image, layer):
 
 
 def generate_subtitles(subtitles, settings, output_dir, debug=False):
-    org_settings = settings
     for st in subtitles:
         print(st["no"])
         print("\n".join(st["lines"]))
         # 字幕個別の設定あり
+        st_settings = settings
         if st["time_info"].get("json"):
-            settings = my_settings.merge_settings(org_settings, st["time_info"]["json"])
+            st_settings = my_settings.merge_settings(settings, st["time_info"]["json"])
         # imageの生成
         image = pdb.gimp_image_new(10, 10, gimpfu.RGB)
         tmp_layer = add_layer(image, "字幕")
-        text_setting = settings["styles"]["text"]
+        text_setting = st_settings["styles"]["text"]
         font_size = text_setting["size"]
         # 字幕作成
         text_layer = add_text(
@@ -139,7 +139,7 @@ def generate_subtitles(subtitles, settings, output_dir, debug=False):
             text_setting["line_space_rate"],
         )
 
-        canvas_setting = settings["canvas"]
+        canvas_setting = st_settings["canvas"]
         offset_x = font_size * canvas_setting["padding_x_rate"]
         offset_y = font_size * canvas_setting["padding_y_rate"]
         text_w = pdb.gimp_drawable_width(text_layer)
@@ -154,9 +154,9 @@ def generate_subtitles(subtitles, settings, output_dir, debug=False):
         pdb.gimp_layer_resize(tmp_layer, w, h, offset_x, offset_y)
         pdb.gimp_image_resize(image, w, h, offset_x, offset_y)
 
-        num_of_borders = min(MAX_NUM_OF_BORDERS, settings["number_of_borders"])
+        num_of_borders = min(MAX_NUM_OF_BORDERS, st_settings["number_of_borders"])
         for i in range(num_of_borders):
-            border_setting = settings["styles"]["borders"][i]
+            border_setting = st_settings["styles"]["borders"][i]
             if not border_setting:
                 print("{}に該当するボーダー設定がありません".format(i))
                 continue
@@ -166,8 +166,8 @@ def generate_subtitles(subtitles, settings, output_dir, debug=False):
                 continue
             add_outline(image, target_layer, i, font_size, border_setting)
 
-        if settings["with_shadow"]:
-            shadow_setting = settings["styles"]["shadow"]
+        if st_settings["with_shadow"]:
+            shadow_setting = st_settings["styles"]["shadow"]
             if shadow_setting:
                 pdb.script_fu_drop_shadow(
                     image,
@@ -182,8 +182,8 @@ def generate_subtitles(subtitles, settings, output_dir, debug=False):
 
         text_area = get_text_area(image, image.layers[0])
 
-        if settings["with_box"]:
-            box_setting = settings["styles"]["box"]
+        if st_settings["with_box"]:
+            box_setting = st_settings["styles"]["box"]
             if box_setting:
                 last_idx = len(image.layers)
                 box_layer = add_layer(
@@ -213,7 +213,7 @@ def generate_subtitles(subtitles, settings, output_dir, debug=False):
             merged_layer.name = "字幕 統合版"
 
             # crop
-            crop_setting = settings["crop_area"]
+            crop_setting = st_settings["crop_area"]
             pdx = crop_setting["padding_x"]
             pdy = crop_setting["padding_y"]
             ofx = text_area[2] - pdx
