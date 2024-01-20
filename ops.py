@@ -3,10 +3,12 @@ import bpy
 import os
 import datetime
 import shutil
+import subprocess
 
 from bpy.types import Context, Event
 from . import my_srt
 from . import utils
+from . import my_settings
 
 
 class StrLoaderGetTimestampOfPlayhead(bpy.types.Operator):
@@ -270,53 +272,184 @@ class SrtLoaderRemoveJimaku(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class SrtLoaderGenerateAllJimakuImages(bpy.types.Operator):
+def remove_all_image_strips(generated_by="srt_loarder"):
+    target_strips = []
+    sequences = bpy.context.scene.sequence_editor.sequences
+    for seq in sequences:
+        if seq.type == "IMAGE" and seq.get("generated_by") == generated_by:
+            target_strips.append(seq)
+
+    for seq in target_strips:
+        sequences.remove(seq)
+
+
+def create_image_strips(generated_by="srt_loarder"):
+    jimaku_data = bpy.data.objects[0].srtloarder_jimaku
+    strloader_data = bpy.data.objects[0].srtloarder_settings
+
+    channel_no = strloader_data.settings.channel_no
+    offset_x = strloader_data.settings.offset_x
+    offset_y = strloader_data.settings.offset_y
+
+    jimaku_list = jimaku_data.list
+    image_dir = bpy.path.abspath(strloader_data.image_dir)
+
+    remove_all_image_strips(generated_by)
+
+    for jimaku in jimaku_list:
+        image_path = os.path.join(image_dir, f"{jimaku['no']}.png")
+        if not os.path.isfile(image_path):
+            next
+
+        if jimaku.settings.useJimakuSettings:
+            channel_no = jimaku.settings.channel_no
+            offset_x = jimaku.settings.offset_x
+            offset_y = jimaku.settings.offset_y
+
+        img: bpy.types.ImageSequence = (
+            bpy.context.scene.sequence_editor.sequences.new_image(
+                os.path.basename(image_path),
+                image_path,
+                channel_no,
+                round(jimaku.start_frame),
+            )
+        )
+        img.frame_final_duration = round(jimaku.frame_duration)
+        # 移動の基準点を画像の上辺の中心に変更
+        img.transform.origin = [0.5, 1.0]
+        element = img.elements[0]
+        height_offset = element.orig_height * img.transform.scale_y / 2
+        # オフセット分ストリップを移動
+        img.transform.offset_x = offset_x
+        img.transform.offset_y = offset_y - height_offset
+
+        # カスタムプロパティーを設定
+        img["generated_by"] = generated_by
+        img["jimaku_no"] = jimaku.no
+
+
+class SrtLoaderGenerateImagesBase:
+    _timer = None
+    _proc = None
+
+    @classmethod
+    def poll(cls, context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        if not srtloarder_settings.srt_file:
+            return False
+        elif not srtloarder_settings.image_dir:
+            return False
+        else:
+            jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+            return len(jimaku_list) > 0
+
+    def modal(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        if event.type == "TIMER":
+            if ret := self._proc.poll() is None:
+                return {"RUNNING_MODAL"}
+            else:
+                if ret != 0:
+                    self.report(type={"ERROR"}, message="字幕画像 作成失敗")
+                    print("stderr:", self._proc.stderr.read())
+                else:
+                    self.report(type={"INFO"}, message="字幕画像 作成成功")
+                    print("stdout:", self._proc.stdout.read())
+                    create_image_strips()
+
+                context.window_manager.event_timer_remove(self._timer)
+                self.dispose()
+                return {"FINISHED"}
+        else:
+            return {"RUNNING_MODAL"}
+
+    def dispose(self):
+        self._proc.stdout.close()
+        self._proc.stderr.close()
+        self._timer = None
+        self._proc = None
+
+    def create_script_for_stdin(self, jimaku_data, srtloarder_settings):
+        jimaku_list = jimaku_data.list
+        srt_json = utils.jimakulist_to_json(jimaku_list)
+
+        default_json = utils.settings_and_styles_to_json(
+            srtloarder_settings, for_jimaku=False
+        )
+        default_settings_path = os.path.join(
+            os.path.dirname(__file__), "default_settings.json"
+        )
+        default_settings = my_settings.read_config_file(default_settings_path)
+        output_dir = bpy.path.abspath(srtloarder_settings.image_dir)
+        return utils.create_gimp_script(
+            srt_json, default_json, output_dir, default_settings
+        )
+
+    def invoke(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        addon_name = __name__.split(".")[0]
+        prefs = context.preferences
+        addon_prefs = prefs.addons[addon_name].preferences
+        gimp_path = addon_prefs.gimp_path
+        jimaku_data = bpy.data.objects[0].srtloarder_jimaku
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+
+        script = self.create_script_for_stdin(jimaku_data, srtloarder_settings)
+
+        cmdline = utils.create_gimp_command_line(gimp_path)
+
+        self._proc = subprocess.Popen(
+            cmdline,
+            shell=True,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        self.send_to_stdin(script)
+        print(script)
+
+        self.report(type={"INFO"}, message="字幕画像 作成開始...")
+        self._timer = context.window_manager.event_timer_add(1.0, window=context.window)
+        context.window_manager.modal_handler_add(self)
+
+        return {"RUNNING_MODAL"}
+
+    def send_to_stdin(self, script):
+        self._proc.stdin.write(script)
+        self._proc.stdin.close()
+
+
+class SrtLoaderGenerateAllJimakuImages(SrtLoaderGenerateImagesBase, bpy.types.Operator):
     bl_idname = "srt_loader.generate_all_jimaku_images"
     bl_label = "字幕画像の一括作成"
     bl_description = "字幕画像を一括で作成する"
     bl_options = {"REGISTER", "UNDO"}
 
-    @classmethod
-    def poll(cls, context):
-        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
-        if not srtloarder_settings.srt_file:
-            return False
-        elif not srtloarder_settings.image_dir:
-            return False
-        else:
-            jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
-            return len(jimaku_list) > 0
 
-    def execute(self, context: Context) -> Set[str] | Set[int]:
-        addon_name = __name__.split(".")[0]
-        prefs = context.preferences
-        addon_prefs = prefs.addons[addon_name].preferences
-        gimp_path = addon_prefs.gimp_path
-        print(gimp_path)
-        # TODO 実装
-        return {"FINISHED"}
-
-
-class SrtLoaderGenerateCurrentJimakuImage(bpy.types.Operator):
+class SrtLoaderGenerateCurrentJimakuImage(
+    SrtLoaderGenerateImagesBase, bpy.types.Operator
+):
     bl_idname = "srt_loader.generate_current_jimaku_image"
     bl_label = "字幕画像の作成"
     bl_description = "現在の字幕の画像を作成する"
     bl_options = {"REGISTER", "UNDO"}
 
-    @classmethod
-    def poll(cls, context):
-        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
-        if not srtloarder_settings.srt_file:
-            return False
-        elif not srtloarder_settings.image_dir:
-            return False
-        else:
-            jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
-            return len(jimaku_list) > 0
+    def create_script_for_stdin(self, jimaku_data, srtloarder_settings):
+        print("current_jimaku!!")
+        jimaku_index = jimaku_data.index
+        jimaku_list = [jimaku_data.list[jimaku_index]]
+        srt_json = utils.jimakulist_to_json(jimaku_list)
 
-    def execute(self, context: Context) -> Set[str] | Set[int]:
-        # TODO 実装
-        return {"FINISHED"}
+        default_json = utils.settings_and_styles_to_json(
+            srtloarder_settings, for_jimaku=False
+        )
+        default_settings_path = os.path.join(
+            os.path.dirname(__file__), "default_settings.json"
+        )
+        default_settings = my_settings.read_config_file(default_settings_path)
+        output_dir = bpy.path.abspath(srtloarder_settings.image_dir)
+        return utils.create_gimp_script(
+            srt_json, default_json, output_dir, default_settings
+        )
 
 
 class_list = [
