@@ -13,6 +13,10 @@ def timedelta_to_frame(delta: datetime.timedelta, frame_rate):
     return seconds * frame_rate
 
 
+def rgb_and_opacity_to_rgba(hex_rgb, opacity=1.0):
+    return hex_rgb + "{:02x}".format(opacity * 255)
+
+
 def hex_to_floatvector(hex_color: str):
     hex_color = hex_color.lstrip("#")
     if len(hex_color) in [3, 4]:
