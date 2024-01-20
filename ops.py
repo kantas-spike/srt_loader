@@ -293,6 +293,9 @@ class SrtLoaderUpdateJimakuStartFrame(bpy.types.Operator):
         jimaku = jimaku_list[idx]
         cur_frame = bpy.context.scene.frame_current
         jimaku.start_frame = cur_frame
+        target_strip = find_strip(jimaku.no)
+        if target_strip is not None:
+            target_strip.frame_start = cur_frame
         return {"FINISHED"}
 
 
@@ -325,6 +328,12 @@ class SrtLoaderUpdateJimakuFrameDuration(bpy.types.Operator):
         return {"FINISHED"}
 
 
+def find_jimaku(list, no):
+    for jimaku in list:
+        if jimaku.no == no:
+            return jimaku
+
+
 def find_strip(no, generated_by="srt_loarder"):
     sequences = bpy.context.scene.sequence_editor.sequences
     for seq in sequences:
@@ -336,18 +345,22 @@ def find_strip(no, generated_by="srt_loarder"):
             return seq
 
 
-def remove_all_image_strips(generated_by="srt_loarder"):
+def remove_image_strips(target_no, generated_by="srt_loarder"):
     target_strips = []
     sequences = bpy.context.scene.sequence_editor.sequences
     for seq in sequences:
         if seq.type == "IMAGE" and seq.get("generated_by") == generated_by:
-            target_strips.append(seq)
+            if target_no is None:
+                target_strips.append(seq)
+            elif seq.get("jimaku_no") == target_no:
+                target_strips.append(seq)
+                break
 
     for seq in target_strips:
         sequences.remove(seq)
 
 
-def create_image_strips(generated_by="srt_loarder"):
+def create_image_strips(target_no, generated_by="srt_loarder"):
     jimaku_data = bpy.data.objects[0].srtloarder_jimaku
     strloader_data = bpy.data.objects[0].srtloarder_settings
 
@@ -355,15 +368,18 @@ def create_image_strips(generated_by="srt_loarder"):
     offset_x = strloader_data.settings.offset_x
     offset_y = strloader_data.settings.offset_y
 
-    jimaku_list = jimaku_data.list
     image_dir = bpy.path.abspath(strloader_data.image_dir)
+    jimaku_list = jimaku_data.list
+    if target_no is not None:
+        jimaku = find_jimaku(jimaku_list, target_no)
+        jimaku_list = [jimaku]
 
-    remove_all_image_strips(generated_by)
+    remove_image_strips(target_no, generated_by)
 
     for jimaku in jimaku_list:
         image_path = os.path.join(image_dir, f"{jimaku['no']}.png")
         if not os.path.isfile(image_path):
-            next
+            continue
 
         if jimaku.settings.useJimakuSettings:
             channel_no = jimaku.settings.channel_no
@@ -395,6 +411,7 @@ def create_image_strips(generated_by="srt_loarder"):
 class SrtLoaderGenerateImagesBase:
     _timer = None
     _proc = None
+    _target_no = None
 
     @classmethod
     def poll(cls, context):
@@ -418,7 +435,7 @@ class SrtLoaderGenerateImagesBase:
                 else:
                     self.report(type={"INFO"}, message="字幕画像 作成成功")
                     print("stdout:", self._proc.stdout.read())
-                    create_image_strips()
+                    create_image_strips(self._target_no)
 
                 context.window_manager.event_timer_remove(self._timer)
                 self.dispose()
@@ -500,7 +517,11 @@ class SrtLoaderGenerateCurrentJimakuImage(
     def create_script_for_stdin(self, jimaku_data, srtloarder_settings):
         print("current_jimaku!!")
         jimaku_index = jimaku_data.index
-        jimaku_list = [jimaku_data.list[jimaku_index]]
+        jimaku = jimaku_data.list[jimaku_index]
+        jimaku_list = [jimaku]
+
+        self._target_no = jimaku.no
+
         srt_json = utils.jimakulist_to_json(jimaku_list)
 
         default_json = utils.settings_and_styles_to_json(
