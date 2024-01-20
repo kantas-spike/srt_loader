@@ -209,15 +209,16 @@ def create_gimp_script(
     additional_sys_path=get_addon_directory(),
     debug=False,
 ):
-    script = f"""
+    script = f"""# -*- coding: utf-8 -*-
 import json
+import datetime
 import sys
 sys.path=[{repr(additional_sys_path)}]+sys.path
 import subtitle_creator
 
-subtitles = json.loads({repr(subtitles)})
-config = json.loads({repr(config)})
-default_config = json.loads({repr(default_config)})
+subtitles = {repr(subtitles)}
+config = {repr(config)}
+default_config = {repr(default_config)}
 output_path = {repr(output_path)}
 debug = {debug}
 
