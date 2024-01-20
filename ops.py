@@ -272,6 +272,70 @@ class SrtLoaderRemoveJimaku(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SrtLoaderUpdateJimakuStartFrame(bpy.types.Operator):
+    bl_idname = "srt_loader.update_jimaku_startframe"
+    bl_label = "字幕情報の開始フレームの更新"
+    bl_description = "字幕情報の開始フレームをプレイヘッドの位置に更新する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        if not srtloarder_settings.srt_file:
+            return False
+        else:
+            jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+            return len(jimaku_list) > 0
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+        idx = bpy.data.objects[0].srtloarder_jimaku.index
+        jimaku = jimaku_list[idx]
+        cur_frame = bpy.context.scene.frame_current
+        jimaku.start_frame = cur_frame
+        return {"FINISHED"}
+
+
+class SrtLoaderUpdateJimakuFrameDuration(bpy.types.Operator):
+    bl_idname = "srt_loader.update_jimaku_frameduration"
+    bl_label = "字幕ストリップの長さを反映"
+    bl_description = "字幕情報のストリップの長さを反映する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        if not srtloarder_settings.srt_file:
+            return False
+        else:
+            jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+            index = bpy.data.objects[0].srtloarder_jimaku.index
+            jimaku = jimaku_list[index]
+            target_strip = find_strip(jimaku.no)
+            return len(jimaku_list) > 0 and target_strip is not None
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+        idx = bpy.data.objects[0].srtloarder_jimaku.index
+        jimaku = jimaku_list[idx]
+
+        target_strip = find_strip(jimaku.no)
+        if target_strip:
+            jimaku.frame_duration = target_strip.frame_final_duration
+        return {"FINISHED"}
+
+
+def find_strip(no, generated_by="srt_loarder"):
+    sequences = bpy.context.scene.sequence_editor.sequences
+    for seq in sequences:
+        if (
+            seq.type == "IMAGE"
+            and seq.get("generated_by") == generated_by
+            and seq.get("jimaku_no") == no
+        ):
+            return seq
+
+
 def remove_all_image_strips(generated_by="srt_loarder"):
     target_strips = []
     sequences = bpy.context.scene.sequence_editor.sequences
@@ -467,6 +531,8 @@ class_list = [
     SrtLoaderCancelJimaku,
     SrtLoaderAddJimaku,
     SrtLoaderRemoveJimaku,
+    SrtLoaderUpdateJimakuStartFrame,
+    SrtLoaderUpdateJimakuFrameDuration,
     SrtLoaderGenerateAllJimakuImages,
     SrtLoaderGenerateCurrentJimakuImage,
 ]

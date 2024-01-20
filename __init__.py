@@ -141,19 +141,28 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         split = row.split(factor=0.2)
         split.alignment = "RIGHT"
         split.label(text="Start")
-        split.prop(
+        col = split.column()
+        col.prop(
             jimaku,
             "start_frame",
             text=smpte_from_frame(start_frame),
         )
+        col.operator(ops.SrtLoaderUpdateJimakuStartFrame.bl_idname, text="現在のフレームに更新")
+        row = layout.row(align=True)
+        row.separator()
+
         row = layout.row(align=True)
         split = row.split(factor=0.2)
         split.alignment = "RIGHT"
         split.label(text="Duration")
-        split.prop(
+        col = split.column()
+        col.prop(
             jimaku,
             "frame_duration",
             text=smpte_from_frame(frame_duration),
+        )
+        col.operator(
+            ops.SrtLoaderUpdateJimakuFrameDuration.bl_idname, text="ストリップの長さを反映"
         )
         row = layout.row(align=True)
         row.separator()
