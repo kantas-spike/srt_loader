@@ -159,7 +159,9 @@ def jimakulist_to_json(list):
         obj["time_info"]["end"] = bpy.utils.time_from_frame(
             item.start_frame + item.frame_duration
         )
-        obj["time_info"]["json"] = settings_and_styles_to_json(item)
+        json = settings_and_styles_to_json(item)
+        if len(json) > 0:
+            obj["time_info"]["json"] = json
         obj["lines"] = item.text.split("\n")
         results.append(obj)
 
