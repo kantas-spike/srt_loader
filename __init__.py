@@ -147,7 +147,9 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
             "start_frame",
             text=smpte_from_frame(start_frame),
         )
-        col.operator(ops.SrtLoaderUpdateJimakuStartFrame.bl_idname, text="現在のフレームに更新")
+        col.operator(
+            ops.SrtLoaderUpdateJimakuStartFrame.bl_idname, text="PlayHead→プロパティ+Strip"
+        )
         row = layout.row(align=True)
         row.separator()
 
@@ -162,7 +164,7 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
             text=smpte_from_frame(frame_duration),
         )
         col.operator(
-            ops.SrtLoaderUpdateJimakuFrameDuration.bl_idname, text="ストリップの長さを反映"
+            ops.SrtLoaderUpdateJimakuFrameDuration.bl_idname, text="Strip→プロパティ"
         )
         row = layout.row(align=True)
         row.separator()
