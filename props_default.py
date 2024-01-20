@@ -18,6 +18,8 @@ class SrtLoaderDefaultTextStyleProperties(bpy.types.PropertyGroup):
     size: bpy.props.IntProperty(default=48)
     color: bpy.props.FloatVectorProperty(
         subtype="COLOR",
+        min=0,
+        max=1.0,
         description="文字の前景色",
         default=utils.hex_to_floatvector("#40516a"),
     )
@@ -57,6 +59,8 @@ class SrtLoaderDefaultBorderStyleProperties2(bpy.types.PropertyGroup):
     color: bpy.props.FloatVectorProperty(
         subtype="COLOR",
         name="色",
+        min=0,
+        max=1.0,
         description="縁取りの色",
         default=utils.hex_to_floatvector("#40516a"),
     )

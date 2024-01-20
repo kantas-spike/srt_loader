@@ -19,6 +19,8 @@ class SrtLoaderTextStyleProperties(bpy.types.PropertyGroup):
     color: bpy.props.FloatVectorProperty(
         subtype="COLOR",
         description="文字の前景色",
+        min=0,
+        max=1.0,
         default=utils.hex_to_floatvector("#40516a"),
         update=update_jimaku_property,
     )
@@ -72,6 +74,8 @@ class SrtLoaderBorderStyleProperties2(bpy.types.PropertyGroup):
         subtype="COLOR",
         name="色",
         description="縁取りの色",
+        min=0,
+        max=1.0,
         default=utils.hex_to_floatvector("#40516a"),
         update=update_jimaku_property,
     )
