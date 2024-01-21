@@ -210,6 +210,12 @@ class JimakuSettingsPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         layout_property_row(layout, "Channel No.", jimaku.settings, "channel_no")
         layout_property_row(layout, "Image Offset X", jimaku.settings, "offset_x")
         layout_property_row(layout, "Image Offset Y", jimaku.settings, "offset_y")
+        row = layout.row(align=True)
+        row.separator()
+        row = layout.row(align=True)
+        row.operator(
+            ops.SrtLoaderUpdateJimakuSettings.bl_idname, text="Strip→Properties"
+        )
 
 
 class JimakuStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):

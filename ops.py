@@ -328,6 +328,39 @@ class SrtLoaderUpdateJimakuFrameDuration(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SrtLoaderUpdateJimakuSettings(bpy.types.Operator):
+    bl_idname = "srt_loader.update_jimaku_settings"
+    bl_label = "字幕ストリップの位置情報を反映"
+    bl_description = "字幕情報のストリップの位置情報を反映する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        if not srtloarder_settings.srt_file:
+            return False
+        else:
+            jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+            index = bpy.data.objects[0].srtloarder_jimaku.index
+            jimaku = jimaku_list[index]
+            target_strip = find_strip(jimaku.no)
+            return len(jimaku_list) > 0 and target_strip is not None
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
+        idx = bpy.data.objects[0].srtloarder_jimaku.index
+        jimaku = jimaku_list[idx]
+
+        target_strip: bpy.types.ImageSequence = find_strip(jimaku.no)
+        if target_strip:
+            jimaku.settings.channel_no = target_strip.channel
+            jimaku.settings.offset_x = target_strip.transform.offset_x
+            element = target_strip.elements[0]
+            height_offset = element.orig_height * target_strip.transform.scale_y / 2
+            jimaku.settings.offset_y = target_strip.transform.offset_y + height_offset
+        return {"FINISHED"}
+
+
 def find_jimaku(list, no):
     for jimaku in list:
         if jimaku.no == no:
@@ -589,6 +622,7 @@ class_list = [
     SrtLoaderRemoveJimaku,
     SrtLoaderUpdateJimakuStartFrame,
     SrtLoaderUpdateJimakuFrameDuration,
+    SrtLoaderUpdateJimakuSettings,
     SrtLoaderGenerateAllJimakuImages,
     SrtLoaderGenerateCurrentJimakuImage,
     SrtLoaderRepositionCurrentJimakuImage,
