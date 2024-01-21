@@ -99,8 +99,17 @@ class JimakuPanel(SrtLoaderPanelBase, bpy.types.Panel):
         row = layout.row()
         row.operator(ops.SrtLoaderAddJimaku.bl_idname, text="追加")
         row.operator(ops.SrtLoaderRemoveJimaku.bl_idname, text="削除")
+
+        row = layout.row()
+        row.separator()
         row = layout.row()
         row.operator(ops.SrtLoaderGenerateAllJimakuImages.bl_idname, text="字幕画像の一括作成")
+        row = layout.row()
+        row.operator(
+            ops.SrtLoaderRepositionAllJimakuImages.bl_idname, text="字幕画像の一括再配置"
+        )
+        row = layout.row()
+        row.operator(ops.SrtLoaderRemoveAllJimakuImages.bl_idname, text="字幕画像の一括削除")
 
 
 class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
@@ -171,6 +180,10 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
         row = layout.row(align=True)
         row.operator(ops.SrtLoaderGenerateCurrentJimakuImage.bl_idname, text="字幕画像の作成")
+        row = layout.row(align=True)
+        row.operator(
+            ops.SrtLoaderRepositionCurrentJimakuImage.bl_idname, text="字幕画像の再配置"
+        )
 
 
 class JimakuSettingsPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):

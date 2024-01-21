@@ -345,7 +345,7 @@ def find_strip(no, generated_by="srt_loarder"):
             return seq
 
 
-def remove_image_strips(target_no, generated_by="srt_loarder"):
+def remove_image_strips(target_no=None, generated_by="srt_loarder"):
     target_strips = []
     sequences = bpy.context.scene.sequence_editor.sequences
     for seq in sequences:
@@ -360,7 +360,7 @@ def remove_image_strips(target_no, generated_by="srt_loarder"):
         sequences.remove(seq)
 
 
-def create_image_strips(target_no, generated_by="srt_loarder"):
+def create_image_strips(target_no=None, generated_by="srt_loarder"):
     jimaku_data = bpy.data.objects[0].srtloarder_jimaku
     strloader_data = bpy.data.objects[0].srtloarder_settings
 
@@ -537,6 +537,41 @@ class SrtLoaderGenerateCurrentJimakuImage(
         )
 
 
+class SrtLoaderRepositionCurrentJimakuImage(bpy.types.Operator):
+    bl_idname = "srt_loader.reposition_current_jimaku_image"
+    bl_label = "字幕画像の再配置"
+    bl_description = "現在の字幕の画像を再配置する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        jimaku_data = bpy.data.objects[0].srtloarder_jimaku
+        jimaku = jimaku_data.list[jimaku_data.index]
+        create_image_strips(jimaku.no)
+        return {"FINISHED"}
+
+
+class SrtLoaderRepositionAllJimakuImages(bpy.types.Operator):
+    bl_idname = "srt_loader.reposition_all_jimaku_images"
+    bl_label = "全字幕画像の再配置"
+    bl_description = "全ての字幕の画像を再配置する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        create_image_strips()
+        return {"FINISHED"}
+
+
+class SrtLoaderRemoveAllJimakuImages(bpy.types.Operator):
+    bl_idname = "srt_loader.remove_all_jimaku_images"
+    bl_label = "全字幕画像の削除"
+    bl_description = "全ての字幕の画像を削除する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        remove_image_strips()
+        return {"FINISHED"}
+
+
 class_list = [
     # SrtLoaderImportImages,
     # SrtLoaderRemoveImportedImages,
@@ -556,4 +591,7 @@ class_list = [
     SrtLoaderUpdateJimakuFrameDuration,
     SrtLoaderGenerateAllJimakuImages,
     SrtLoaderGenerateCurrentJimakuImage,
+    SrtLoaderRepositionCurrentJimakuImage,
+    SrtLoaderRepositionAllJimakuImages,
+    SrtLoaderRemoveAllJimakuImages,
 ]
