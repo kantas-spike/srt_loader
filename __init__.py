@@ -124,7 +124,7 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         split = layout.split(factor=0.2, align=True)
         col = split.column(align=True)
         col.alignment = "RIGHT"
-        col.label(text="テキスト")
+        col.label(text="Text")
         col = split.column(align=True)
         for txt in jimaku.text.split("\n"):
             col.label(text=txt)
