@@ -4,6 +4,7 @@ import os
 import datetime
 import shutil
 import subprocess
+import json
 
 from bpy.types import Context, Event
 from . import my_srt
@@ -617,6 +618,52 @@ class SrtLoaderSetupAddonPresets(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SrtLoaderApplyPresets(bpy.types.Operator):
+    bl_idname = "srt_loader.apply_presets"
+    bl_label = "プリセットを設定する"
+    bl_description = "プリセットを設定する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    style_type: bpy.props.EnumProperty(
+        name="設定先のスタイル",
+        description="スタイルの種類(default,jimaku)",
+        items=[
+            ("default", "Default", "デフォルトスタイル"),
+            ("jimaku", "Jimaku", "字幕のスタイル"),
+        ],
+        default="default",
+    )
+
+    def get_target_styles(self):
+        if self.style_type == "default":
+            return bpy.data.objects[0].srtloarder_settings.styles
+        else:
+            list = bpy.data.objects[0].srtloarder_jimaku.list
+            index = bpy.data.objects[0].srtloarder_jimaku.index
+            return list[index].styles
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        target_styles = bpy.data.objects[0].srtloarder_settings.styles
+        if self.style_type == "jimaku":
+            list = bpy.data.objects[0].srtloarder_jimaku.list
+            index = bpy.data.objects[0].srtloarder_jimaku.index
+            jimaku = list[index]
+            target_styles = jimaku.styles
+
+        json_path = utils.get_style_json_from_presets(target_styles.preset_name)
+        if json_path is None:
+            self.report(
+                type={"Error"}, message=f"該当するプリセット({target_styles.preset_name})はありません"
+            )
+        print(json_path, self.style_type)
+        with open(json_path) as f:
+            json_data = json.load(f)
+            target_styles = self.get_target_styles()
+            utils.update_styles(target_styles, json_data)
+
+        self.report(type={"INFO"}, message=f"プリセットの内容にスタイルを更新しました")
+        return {"FINISHED"}
+
 
 class_list = [
     # SrtLoaderImportImages,
@@ -642,4 +689,5 @@ class_list = [
     SrtLoaderRepositionAllJimakuImages,
     SrtLoaderRemoveAllJimakuImages,
     SrtLoaderSetupAddonPresets,
+    SrtLoaderApplyPresets,
 ]

@@ -231,7 +231,20 @@ class JimakuStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         row.prop(jimaku.styles, "useJimakuStyle", text="")
 
     def draw(self, context: Context):
-        pass
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+        preset_name = jimaku.styles.preset_name
+        layout = self.layout
+        layout.enabled = jimaku.styles.useJimakuStyle
+        row = layout.row(align=True)
+        split = row.split(factor=0.4)
+        split.alignment = "RIGHT"
+        split.label(text="プリセット")
+        split.menu(SrtLoaderJimakuStylesPresetsMenu.bl_idname, text=preset_name)
+        row = layout.row(align=True)
+        btn = row.operator(ops.SrtLoaderApplyPresets.bl_idname, text="プリセットを反映")
+        btn.style_type = "jimaku"
 
 
 class JimakuImageStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
@@ -501,7 +514,16 @@ class DefaultStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
     bl_idname = "SRTLOADER_PT_DefaultStyles"
 
     def draw(self, context: Context):
-        pass
+        layout = self.layout
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        preset_name = srtloarder_settings.styles.preset_name
+        row = layout.row(align=True)
+        split = row.split(factor=0.4)
+        split.alignment = "RIGHT"
+        split.label(text="プリセット")
+        split.menu(SrtLoaderDefaultStylesPresetsMenu.bl_idname, text=preset_name)
+        row = layout.row(align=True)
+        row.operator(ops.SrtLoaderApplyPresets.bl_idname, text="プリセットを反映")
 
 
 class DefaultImageStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
@@ -733,6 +755,21 @@ class SrtLoaderPreferences(bpy.types.AddonPreferences):
         row.operator(ops.SrtLoaderSetupAddonPresets.bl_idname)
 
 
+class SrtLoaderDefaultStylesPresetsMenu(bpy.types.Menu):
+    bl_idname = "SRTLOADER_MT_DefaultStylesPresets"
+    bl_label = "Default Style Presets"
+    preset_subdir = "srt_loader/default_styles"
+    preset_operator = "script.execute_preset"
+    draw = bpy.types.Menu.draw_preset
+
+
+class SrtLoaderJimakuStylesPresetsMenu(bpy.types.Menu):
+    bl_idname = "SRTLOADER_MT_JimakuStylesPresets"
+    bl_label = "Default Style Presets"
+    preset_subdir = "srt_loader/jimaku_styles"
+    preset_operator = "script.execute_preset"
+    draw = bpy.types.Menu.draw_preset
+
 
 def menu_fn(self, context):
     self.layout.separator()
@@ -768,6 +805,8 @@ classes = (
         DefaultShadowStylesPanel,
         DefaultBoxStylesPanel,
         JimakuList,
+        SrtLoaderDefaultStylesPresetsMenu,
+        SrtLoaderJimakuStylesPresetsMenu,
     ]
 )
 

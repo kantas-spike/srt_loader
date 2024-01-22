@@ -178,6 +178,7 @@ class SrtLoaderJimakuSettingsPorperties(bpy.types.PropertyGroup):
 
 
 class SrtLoaderJimakuStylePorperties(bpy.types.PropertyGroup):
+    preset_name: bpy.props.StringProperty(name="Preset名", default="default")
     useJimakuStyle: bpy.props.BoolProperty(default=False, update=update_jimaku_property)
     image: bpy.props.PointerProperty(type=SrtLoaderImageStyleProperties)
     text: bpy.props.PointerProperty(type=SrtLoaderTextStyleProperties)

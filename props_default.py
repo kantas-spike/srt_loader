@@ -118,6 +118,7 @@ class SrtLoaderDefaultBoxStyleProperties(bpy.types.PropertyGroup):
 
 
 class SrtLoaderDefaultStylesProperties(bpy.types.PropertyGroup):
+    preset_name: bpy.props.StringProperty(name="Preset名", default="default")
     image: bpy.props.PointerProperty(type=SrtLoaderDefaultImageStyleProperties)
     text: bpy.props.PointerProperty(type=SrtLoaderDefaultTextStyleProperties)
     borders: bpy.props.PointerProperty(type=SrtLoaderDefaultBorderListStyleProperties)
