@@ -605,6 +605,19 @@ class SrtLoaderRemoveAllJimakuImages(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SrtLoaderSetupAddonPresets(bpy.types.Operator):
+    bl_idname = "srt_loader.setup_addon_presets"
+    bl_label = "プリセットを用意する"
+    bl_description = "アドオン用のプリセットをインストールする"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        utils.setup_addon_presets()
+        self.report(type={"INFO"}, message=f"プリセットをコピーしました")
+        return {"FINISHED"}
+
+
+
 class_list = [
     # SrtLoaderImportImages,
     # SrtLoaderRemoveImportedImages,
@@ -628,4 +641,5 @@ class_list = [
     SrtLoaderRepositionCurrentJimakuImage,
     SrtLoaderRepositionAllJimakuImages,
     SrtLoaderRemoveAllJimakuImages,
+    SrtLoaderSetupAddonPresets,
 ]

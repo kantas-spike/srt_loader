@@ -230,3 +230,62 @@ debug = {debug}
 subtitle_creator.run(subtitles, config, output_path, default_config, debug)
 """
     return script
+
+
+def get_src_preset_dirpath(subdir=None):
+    preset_dirname = "presets"
+    if subdir:
+        preset_dirname = os.path.join(preset_dirname, subdir)
+
+    return os.path.join(os.path.dirname(__file__), preset_dirname)
+
+
+def get_style_json_from_presets(preset_name):
+    user_script_path = bpy.utils.script_path_user()
+    if user_script_path is None:
+        print("bpy.utils.script_path_user() is None!!")
+        return
+    style_json_dir = os.path.join(user_script_path, "presets/srt_loader/styles_json")
+    style_json_path = os.path.join(style_json_dir, f"{preset_name}.json")
+    if not os.path.isfile(style_json_path):
+        print(f"style json file of {preset_name} not exists!!: {style_json_path}")
+        return
+    return style_json_path
+
+
+def setup_styles_json():
+    user_script_path = bpy.utils.script_path_user()
+    if user_script_path is None:
+        print("bpy.utils.script_path_user() is None!!")
+        return
+    style_json_dir = os.path.join(user_script_path, "presets/srt_loader/styles_json")
+    if not os.path.isdir(style_json_dir):
+        os.makedirs(style_json_dir)
+        print(f"make style json dir: {style_json_dir} ...")
+
+    src_files = os.path.join(get_src_preset_dirpath("styles_json"), "*.json")
+    for f in glob.glob(src_files):
+        shutil.copy(f, style_json_dir)
+
+
+def setup_styles_preset_from_base_styles_presets(target_subdir):
+    user_script_path = bpy.utils.script_path_user()
+    if user_script_path is None:
+        print("bpy.utils.script_path_user() is None!!")
+        return
+    style_preset_dir = os.path.join(
+        user_script_path, f"presets/srt_loader/{target_subdir}"
+    )
+    if not os.path.isdir(style_preset_dir):
+        os.makedirs(style_preset_dir)
+        print(f"make style json dir: {style_preset_dir} ...")
+
+    src_files = os.path.join(get_src_preset_dirpath("base_styles_presets"), "*.py")
+    for f in glob.glob(src_files):
+        shutil.copy(f, style_preset_dir)
+
+
+def setup_addon_presets():
+    setup_styles_json()
+    setup_styles_preset_from_base_styles_presets("default_styles")
+    setup_styles_preset_from_base_styles_presets("jimaku_styles")

@@ -728,6 +728,10 @@ class SrtLoaderPreferences(bpy.types.AddonPreferences):
         layout = self.layout
         col = layout.column()
         col.prop(self, "gimp_path", text="Gimpのパス")
+        row = layout.row()
+        row.separator()
+        row.operator(ops.SrtLoaderSetupAddonPresets.bl_idname)
+
 
 
 def menu_fn(self, context):
