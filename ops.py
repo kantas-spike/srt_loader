@@ -666,11 +666,6 @@ class SrtLoaderApplyPresets(bpy.types.Operator):
 
 
 class_list = [
-    # SrtLoaderImportImages,
-    # SrtLoaderRemoveImportedImages,
-    # SrtLoaderAddItem,
-    # SrtLoaderRemoveItem,
-    # SrtLoaderSelectItem,
     StrLoaderGetTimestampOfPlayhead,
     SrtLoaderResetSrtFile,
     SrtLoaderReadSrtFile,
