@@ -4,6 +4,7 @@ import json
 import os
 import glob
 import shutil
+import logging
 
 
 def get_frame_rate():
@@ -255,12 +256,14 @@ def get_src_preset_dirpath(subdir=None):
 def get_style_json_from_presets(preset_name):
     user_script_path = bpy.utils.script_path_user()
     if user_script_path is None:
-        print("bpy.utils.script_path_user() is None!!")
+        logging.error("bpy.utils.script_path_user() is None!!")
         return
     style_json_dir = os.path.join(user_script_path, "presets/srt_loader/styles_json")
     style_json_path = os.path.join(style_json_dir, f"{preset_name}.json")
     if not os.path.isfile(style_json_path):
-        print(f"style json file of {preset_name} not exists!!: {style_json_path}")
+        logging.error(
+            f"style json file of {preset_name} not exists!!: {style_json_path}"
+        )
         return
     return style_json_path
 
@@ -268,12 +271,12 @@ def get_style_json_from_presets(preset_name):
 def setup_styles_json():
     user_script_path = bpy.utils.script_path_user()
     if user_script_path is None:
-        print("bpy.utils.script_path_user() is None!!")
+        logging.error("bpy.utils.script_path_user() is None!!")
         return
     style_json_dir = os.path.join(user_script_path, "presets/srt_loader/styles_json")
     if not os.path.isdir(style_json_dir):
         os.makedirs(style_json_dir)
-        print(f"make style json dir: {style_json_dir} ...")
+        logging.info(f"make style json dir: {style_json_dir} ...")
 
     src_files = os.path.join(get_src_preset_dirpath("styles_json"), "*.json")
     for f in glob.glob(src_files):
@@ -283,14 +286,14 @@ def setup_styles_json():
 def setup_styles_preset_from_base_styles_presets(target_subdir):
     user_script_path = bpy.utils.script_path_user()
     if user_script_path is None:
-        print("bpy.utils.script_path_user() is None!!")
+        logging.error("bpy.utils.script_path_user() is None!!")
         return
     style_preset_dir = os.path.join(
         user_script_path, f"presets/srt_loader/{target_subdir}"
     )
     if not os.path.isdir(style_preset_dir):
         os.makedirs(style_preset_dir)
-        print(f"make style json dir: {style_preset_dir} ...")
+        logging.info(f"make style json dir: {style_preset_dir} ...")
 
     src_files = os.path.join(get_src_preset_dirpath("base_styles_presets"), "*.py")
     for f in glob.glob(src_files):

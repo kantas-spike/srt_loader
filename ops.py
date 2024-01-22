@@ -5,6 +5,7 @@ import datetime
 import shutil
 import subprocess
 import json
+import logging
 
 from bpy.types import Context, Event
 from . import my_srt
@@ -26,9 +27,10 @@ class StrLoaderGetTimestampOfPlayhead(bpy.types.Operator):
         cur_frame = bpy.context.scene.frame_current
         delta = datetime.timedelta(seconds=(cur_frame / frame_rate))
         timestamp = utils.format_srt_timestamp(delta)
-        print(
+        logging.debug(
             f"frame_rate: {frame_rate}, cur_frame: {cur_frame}, timestamp: {timestamp}"
         )
+
         self.report({"INFO"}, timestamp)
         context.window_manager.clipboard = timestamp
         return {"FINISHED"}
@@ -74,7 +76,7 @@ class SrtLoaderSaveSrtFile(bpy.types.Operator):
 
     def execute(self, context: Context) -> Set[str] | Set[int]:
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
-        print(utils.jimakulist_to_srtdata(srtloarder_jimaku.list))
+        logging.debug(utils.jimakulist_to_srtdata(srtloarder_jimaku.list))
         srtloarder_settings = bpy.data.objects[0].srtloarder_settings
         output_path = bpy.path.abspath(srtloarder_settings.srt_file)
         dir_path = os.path.dirname(output_path)
@@ -465,10 +467,10 @@ class SrtLoaderGenerateImagesBase:
             else:
                 if ret != 0:
                     self.report(type={"ERROR"}, message="字幕画像 作成失敗")
-                    print("stderr:", self._proc.stderr.read())
+                    logging.error(f"stderr of gimp\n{self._proc.stderr.read()}")
                 else:
                     self.report(type={"INFO"}, message="字幕画像 作成成功")
-                    print("stdout:", self._proc.stdout.read())
+                    logging.info(f"stdout of gimp\n{self._proc.stdout.read()}")
                     create_image_strips(self._target_no)
 
                 context.window_manager.event_timer_remove(self._timer)
@@ -520,7 +522,7 @@ class SrtLoaderGenerateImagesBase:
             text=True,
         )
         self.send_to_stdin(script)
-        print(script)
+        logging.info(f"script: \n{script}")
 
         self.report(type={"INFO"}, message="字幕画像 作成開始...")
         self._timer = context.window_manager.event_timer_add(1.0, window=context.window)
@@ -549,7 +551,6 @@ class SrtLoaderGenerateCurrentJimakuImage(
     bl_options = {"REGISTER", "UNDO"}
 
     def create_script_for_stdin(self, jimaku_data, srtloarder_settings):
-        print("current_jimaku!!")
         jimaku_index = jimaku_data.index
         jimaku = jimaku_data.list[jimaku_index]
         jimaku_list = [jimaku]
@@ -655,7 +656,7 @@ class SrtLoaderApplyPresets(bpy.types.Operator):
             self.report(
                 type={"Error"}, message=f"該当するプリセット({target_styles.preset_name})はありません"
             )
-        print(json_path, self.style_type)
+        logging.debug(f"type: {self.style_type}, json_file: {json_path}")
         with open(json_path) as f:
             json_data = json.load(f)
             target_styles = self.get_target_styles()

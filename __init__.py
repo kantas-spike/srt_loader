@@ -17,6 +17,7 @@ from typing import Any
 import bpy
 from bpy.types import Context, UILayout
 from bpy.utils import smpte_from_frame
+import logging
 
 
 bl_info = {
@@ -818,13 +819,20 @@ def add_props():
     bpy.types.Object.srtloarder_jimaku = bpy.props.PointerProperty(
         type=props.SrtLoaderCurrentJimakuProperties
     )
-    # print(len(bpy.data.objects))
-    # print(settings)
 
 
 def remove_props():
     del bpy.types.Object.srtloarder_settings
     del bpy.types.Object.srtloarder_jimaku
+
+
+def setup_logger():
+    logging.basicConfig(
+        format="%(asctime)s:%(levelname)s:%(funcName)s:%(message)s", level=logging.DEBUG
+    )
+
+
+setup_logger()
 
 
 def register():

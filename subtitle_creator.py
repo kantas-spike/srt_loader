@@ -117,8 +117,7 @@ def get_text_area(image, layer):
 
 def generate_subtitles(subtitles, settings, output_dir, debug=False):
     for st in subtitles:
-        print(st["no"])
-        print("\n".join(st["lines"]))
+        print("{}:{}".format(st["no"], "\n".join(st["lines"])))
         # 字幕個別の設定あり
         st_settings = settings
         if st["time_info"].get("json"):
@@ -275,11 +274,13 @@ def run_with_json(
 
 
 def run(subtitles, config, output_path, default_config, debug=False):
-    print("run!!: ", subtitles, output_path)
-    print("default_config: ", default_config)
-    print("config: ", config)
+    print("字幕画像作成開始...")
+    # print("subtitles: {}".format(subtitles))
+    # print("output_path: {}".format(output_path))
+    # print("default_config: {}".format(default_config))
+    # print("config: {}".format(config))
     merged_config = my_settings.merge_settings(default_config, config)
-    print(merged_config)
+    # print("merged_config: {}".format(merged_config))
     abs_outpath = expand_abspath(output_path)
     if not os.path.exists(abs_outpath):
         os.makedirs(abs_outpath)
