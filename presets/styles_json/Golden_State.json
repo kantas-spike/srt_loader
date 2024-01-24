@@ -5,7 +5,7 @@
   "styles": {
     "text": {
       "font_family": "Noto Sans JP Bold",
-      "size": 48,
+      "size": 80,
       "color": "#c4c837",
       "line_space_rate": -0.3,
       "align": "center"
