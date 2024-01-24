@@ -425,7 +425,7 @@ def create_image_strips(target_no=None, generated_by="srt_loarder"):
         img: bpy.types.ImageSequence = (
             bpy.context.scene.sequence_editor.sequences.new_image(
                 os.path.basename(image_path),
-                image_path,
+                bpy.path.relpath(image_path),
                 channel_no,
                 round(jimaku.start_frame),
             )
