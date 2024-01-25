@@ -247,6 +247,8 @@ class SrtLoaderAddJimaku(bpy.types.Operator):
         jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
         item = jimaku_list.add()
         item.no = len(jimaku_list)
+        bpy.data.objects[0].srtloarder_jimaku.index = len(jimaku_list) - 1
+        bpy.ops.srt_loader.update_jimaku_startframe()
         bpy.data.objects[0].srtloarder_jimaku.jimaku_data_changed = True
         return {"FINISHED"}
 
