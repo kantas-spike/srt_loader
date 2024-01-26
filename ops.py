@@ -621,6 +621,31 @@ class SrtLoaderSetupAddonPresets(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SrtLoaderSetPresetName(bpy.types.Operator):
+    bl_idname = "srt_loader.set_preset_name"
+    bl_label = "プリセット名を設定する"
+    bl_description = "プリセット名を設定する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    preset_file_path: bpy.props.StringProperty()
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        logging.debug(f"preset_file_path: {self.preset_file_path}")
+        base_name = os.path.basename(self.preset_file_path).rstrip(".py")
+        dir_name = os.path.basename(os.path.dirname(self.preset_file_path))
+
+        if dir_name == "default_styles":
+            srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+            srtloarder_settings.styles.preset_name = base_name
+        elif dir_name == "jimaku_styles":
+            list = bpy.data.objects[0].srtloarder_jimaku.list
+            index = bpy.data.objects[0].srtloarder_jimaku.index
+            jimaku = list[index]
+            jimaku.styles.preset_name = base_name
+
+        return {"FINISHED"}
+
+
 class SrtLoaderApplyPresets(bpy.types.Operator):
     bl_idname = "srt_loader.apply_presets"
     bl_label = "プリセットを設定する"
@@ -687,5 +712,6 @@ class_list = [
     SrtLoaderRepositionAllJimakuImages,
     SrtLoaderRemoveAllJimakuImages,
     SrtLoaderSetupAddonPresets,
+    SrtLoaderSetPresetName,
     SrtLoaderApplyPresets,
 ]
