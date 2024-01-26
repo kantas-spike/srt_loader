@@ -445,6 +445,9 @@ def create_image_strips(target_no=None, generated_by="srt_loarder"):
         img["generated_by"] = generated_by
         img["jimaku_no"] = jimaku.no
 
+        # 専用の色を設定
+        img.color_tag = "COLOR_05"
+
 
 class SrtLoaderGenerateImagesBase:
     _timer = None
