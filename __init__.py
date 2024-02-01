@@ -508,6 +508,12 @@ class DefaultSettingsPanel(SrtLoaderPanelBase, bpy.types.Panel):
         layout_property_row(
             layout, "Image Offset Y", srtloarder_settings.settings, "offset_y"
         )
+        row = layout.row()
+        row.separator()
+        row = layout.row(align=True)
+        row.operator(
+            ops.SrtLoaderUpdateDefaultJimakuSettings.bl_idname, text="Strip→Properties"
+        )
 
 
 class DefaultStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):

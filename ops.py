@@ -366,6 +366,44 @@ class SrtLoaderUpdateJimakuSettings(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SrtLoaderUpdateDefaultJimakuSettings(bpy.types.Operator):
+    bl_idname = "srt_loader.update_default_jimaku_settings"
+    bl_label = "字幕ストリップのデフォルト位置情報を反映"
+    bl_description = "字幕情報のストリップのデフォルト位置情報を反映する"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        target_strip = context.scene.sequence_editor.active_strip
+        if target_strip is None:
+            return False
+        else:
+            return hasattr(target_strip, "transform")
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        target_strip = context.scene.sequence_editor.active_strip
+        if target_strip:
+            srtloarder_settings.settings.channel_no = target_strip.channel
+            srtloarder_settings.settings.offset_x = target_strip.transform.offset_x
+            if hasattr(target_strip, "elements"):
+                element = target_strip.elements[0]
+                height_offset = element.orig_height * target_strip.transform.scale_y / 2
+                srtloarder_settings.settings.offset_y = (
+                    target_strip.transform.offset_y + height_offset
+                )
+            else:
+                render = bpy.data.scenes["Scene"].render
+                screen_height = render.resolution_y * (
+                    render.resolution_percentage / 100
+                )
+                height_offset = screen_height * target_strip.transform.scale_y / 2
+                srtloarder_settings.settings.offset_y = (
+                    target_strip.transform.offset_y + height_offset
+                )
+        return {"FINISHED"}
+
+
 def find_jimaku(list, no):
     for jimaku in list:
         if jimaku.no == no:
@@ -710,6 +748,7 @@ class_list = [
     SrtLoaderUpdateJimakuStartFrame,
     SrtLoaderUpdateJimakuFrameDuration,
     SrtLoaderUpdateJimakuSettings,
+    SrtLoaderUpdateDefaultJimakuSettings,
     SrtLoaderGenerateAllJimakuImages,
     SrtLoaderGenerateCurrentJimakuImage,
     SrtLoaderRepositionCurrentJimakuImage,
