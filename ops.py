@@ -675,6 +675,7 @@ class SrtLoaderApplyPresets(bpy.types.Operator):
 
     def execute(self, context: Context) -> Set[str] | Set[int]:
         target_styles = bpy.data.objects[0].srtloarder_settings.styles
+        logging.debug(f"self.style_type: {self.style_type}")
         if self.style_type == "jimaku":
             list = bpy.data.objects[0].srtloarder_jimaku.list
             index = bpy.data.objects[0].srtloarder_jimaku.index

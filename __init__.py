@@ -524,7 +524,8 @@ class DefaultStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
         split.label(text="プリセット")
         split.menu(SrtLoaderDefaultStylesPresetsMenu.bl_idname, text=preset_name)
         row = layout.row(align=True)
-        row.operator(ops.SrtLoaderApplyPresets.bl_idname, text="プリセットを反映")
+        btn = row.operator(ops.SrtLoaderApplyPresets.bl_idname, text="プリセットを反映")
+        btn.style_type = "default"
 
 
 class DefaultImageStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
