@@ -117,6 +117,7 @@ class SrtLoaderReadSrtFile(bpy.types.Operator):
         jimaku_data.list.clear()
         items = my_srt.read_srt_file(srt_path)
         fps = utils.get_frame_rate()
+        style_json_data = utils.get_default_style_json_data()
         for item in items:
             obj = jimaku_data.list.add()
             obj.no = item["no"]
@@ -126,6 +127,8 @@ class SrtLoaderReadSrtFile(bpy.types.Operator):
             obj.frame_duration = utils.timedelta_to_frame(diff, fps)
             if "json" in item["time_info"]:
                 utils.update_jimaku(obj, item["time_info"]["json"])
+            else:
+                utils.update_styles(obj.styles, style_json_data, False)
 
     def execute(self, context: Context) -> Set[str] | Set[int]:
         srt_file = bpy.data.objects[0].srtloarder_settings.srt_file
@@ -247,6 +250,8 @@ class SrtLoaderAddJimaku(bpy.types.Operator):
         jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
         item = jimaku_list.add()
         item.no = len(jimaku_list)
+        json_data = utils.get_default_style_json_data()
+        utils.update_styles(item.styles, json_data, False)
         bpy.data.objects[0].srtloarder_jimaku.index = len(jimaku_list) - 1
         bpy.ops.srt_loader.update_jimaku_startframe()
         bpy.data.objects[0].srtloarder_jimaku.jimaku_data_changed = True

@@ -112,16 +112,19 @@ def update_jimaku(jimaku, json):
     update_styles(jimaku.styles, json)
 
 
-def update_styles(styles, json):
+def get_default_style_json_data():
+    json_path = get_style_json_from_presets("default")
+    with open(json_path) as f:
+        return json.load(f)
+
+
+def update_styles(styles, json, use_jimaku=True):
     target_type = "default"
     if hasattr(styles, "useJimakuStyle"):
         target_type = "jimaku"
 
     if target_type == "jimaku":
-        if "styles" in json or "crop_area" in json:
-            styles.useJimakuStyle = True
-        else:
-            styles.useJimakuStyle = False
+        styles.useJimakuStyle = use_jimaku
 
     if "styles" in json:
         styles.text.font_family = json["styles"]["text"]["font_family"]

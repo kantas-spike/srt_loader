@@ -17,6 +17,7 @@ from typing import Any
 import bpy
 from bpy.types import Context, UILayout
 from bpy.utils import smpte_from_frame
+from bpy.app.handlers import persistent
 import logging
 
 
@@ -828,6 +829,16 @@ def add_props():
     )
 
 
+@persistent
+def initialize_styles(dummy):
+    print("initialize_styles")
+    w = bpy.context.window_manager.windows[0]
+    obj = w.scene.camera
+    target_styles = obj.srtloarder_settings.styles
+    json_data = utils.get_default_style_json_data()
+    utils.update_styles(target_styles, json_data)
+
+
 def remove_props():
     del bpy.types.Object.srtloarder_settings
     del bpy.types.Object.srtloarder_jimaku
@@ -840,6 +851,7 @@ def setup_logger():
 
 
 setup_logger()
+bpy.app.handlers.load_post.append(initialize_styles)
 
 
 def register():
