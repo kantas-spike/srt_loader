@@ -452,6 +452,7 @@ def create_image_strips(target_no=None, generated_by="srt_loarder"):
 
     remove_image_strips(target_no, generated_by)
 
+    img_strips = []
     for jimaku in jimaku_list:
         image_path = os.path.join(image_dir, f"{jimaku['no']}.png")
         if not os.path.isfile(image_path):
@@ -485,6 +486,17 @@ def create_image_strips(target_no=None, generated_by="srt_loarder"):
 
         # 専用の色を設定
         img.color_tag = "COLOR_05"
+
+        img_strips.append(img)
+
+        if target_no is not None:
+            break
+
+    if len(img_strips) > 0:
+        bpy.ops.sequencer.select_all(action="DESELECT")
+        for img in img_strips:
+            bpy.context.scene.sequence_editor.active_strip = img
+
 
 
 class SrtLoaderGenerateImagesBase:
