@@ -152,7 +152,7 @@ def update_styles(styles, json, use_jimaku=True):
                 json["styles"]["box"]["color"], json["styles"]["box"]["opacity"]
             )
             styles.box.color = hex_to_floatvector(rgba)
-    elif "crop_area" in json:
+    if "crop_area" in json:
         styles.image.padding_x = json["crop_area"]["padding_x"]
         styles.image.padding_y = json["crop_area"]["padding_y"]
 
