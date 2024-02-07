@@ -7,8 +7,8 @@ def update_jimaku_property(self, context):
 
 
 class SrtLoaderImageStyleProperties(bpy.types.PropertyGroup):
-    padding_x: bpy.props.IntProperty(default=20, update=update_jimaku_property)
-    padding_y: bpy.props.IntProperty(default=20, update=update_jimaku_property)
+    padding_x: bpy.props.IntProperty(default=25, update=update_jimaku_property)
+    padding_y: bpy.props.IntProperty(default=25, update=update_jimaku_property)
 
 
 class SrtLoaderTextStyleProperties(bpy.types.PropertyGroup):

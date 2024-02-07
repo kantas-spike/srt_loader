@@ -2,7 +2,7 @@
   "with_shadow": true,
   "number_of_borders": 2,
   "with_box": true,
-  "crop_area": { "padding_x": 20, "padding_y": 20 },
+  "crop_area": { "padding_x": 25, "padding_y": 25 },
   "canvas": { "padding_x_rate": 1.0, "padding_y_rate": 1.0 },
   "styles": {
     "text": {

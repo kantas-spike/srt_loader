@@ -9,8 +9,8 @@ class SrtLoaderDefaultSettingsProperties(bpy.types.PropertyGroup):
 
 
 class SrtLoaderDefaultImageStyleProperties(bpy.types.PropertyGroup):
-    padding_x: bpy.props.IntProperty(default=20)
-    padding_y: bpy.props.IntProperty(default=20)
+    padding_x: bpy.props.IntProperty(default=25)
+    padding_y: bpy.props.IntProperty(default=25)
 
 
 class SrtLoaderDefaultTextStyleProperties(bpy.types.PropertyGroup):
@@ -131,6 +131,7 @@ class SrtLoaderProperties(bpy.types.PropertyGroup):
     image_dir: bpy.props.StringProperty(subtype="DIR_PATH")
     settings: bpy.props.PointerProperty(type=SrtLoaderDefaultSettingsProperties)
     styles: bpy.props.PointerProperty(type=SrtLoaderDefaultStylesProperties)
+    initialized: bpy.props.BoolProperty(default=False)
 
 
 class_list = [
