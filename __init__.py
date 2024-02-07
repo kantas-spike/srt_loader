@@ -831,12 +831,16 @@ def add_props():
 
 @persistent
 def initialize_styles(dummy):
-    print("initialize_styles")
     w = bpy.context.window_manager.windows[0]
     obj = w.scene.camera
-    target_styles = obj.srtloarder_settings.styles
-    json_data = utils.get_default_style_json_data()
-    utils.update_styles(target_styles, json_data)
+    if not obj.srtloarder_settings.initialized:
+        print("initialize styles")
+        target_styles = obj.srtloarder_settings.styles
+        json_data = utils.get_default_style_json_data()
+        utils.update_styles(target_styles, json_data)
+        obj.srtloarder_settings.initialized = True
+    else:
+        print("skip initialize styles")
 
 
 def remove_props():
