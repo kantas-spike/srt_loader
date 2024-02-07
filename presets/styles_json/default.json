@@ -1,7 +1,8 @@
 {
   "with_shadow": true,
   "number_of_borders": 2,
-  "with_box": true,
+  "with_box": false,
+  "crop_area": { "padding_x": 26, "padding_y": 26 },
   "styles": {
     "text": {
       "font_family": "Noto Sans JP Bold",
