@@ -19,6 +19,7 @@ from bpy.types import Context, UILayout
 from bpy.utils import smpte_from_frame
 from bpy.app.handlers import persistent
 import logging
+import os
 
 
 bl_info = {
@@ -855,6 +856,14 @@ def setup_logger():
 
 
 setup_logger()
+
+preset_dir = utils.get_srtloader_preset_path()
+if os.path.exists(preset_dir):
+    logging.info(f"preset_dirはセットアップ済み: {preset_dir}")
+else:
+    logging.info(f"preset_dirは未セットアップ: {preset_dir}")
+    utils.setup_addon_presets()
+
 bpy.app.handlers.load_post.append(initialize_styles)
 
 
