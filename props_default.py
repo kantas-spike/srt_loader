@@ -128,7 +128,7 @@ class SrtLoaderDefaultStylesProperties(bpy.types.PropertyGroup):
 
 class SrtLoaderProperties(bpy.types.PropertyGroup):
     srt_file: bpy.props.StringProperty(subtype="FILE_PATH")
-    image_dir: bpy.props.StringProperty(subtype="DIR_PATH")
+    image_dir: bpy.props.StringProperty(subtype="DIR_PATH", default="//jimaku_images")
     settings: bpy.props.PointerProperty(type=SrtLoaderDefaultSettingsProperties)
     styles: bpy.props.PointerProperty(type=SrtLoaderDefaultStylesProperties)
     initialized: bpy.props.BoolProperty(default=False)
