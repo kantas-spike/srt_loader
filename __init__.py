@@ -77,10 +77,10 @@ class SourcePanel(SrtLoaderPanelBase, bpy.types.Panel):
         layout_property_row(layout, "Srt File", srtloarder_settings, "srt_file")
         layout_property_row(layout, "Image Dir", srtloarder_settings, "image_dir")
         row = layout.row()
-        row.operator(ops.SrtLoaderReadSrtFile.bl_idname, text="読み込み")
+        row.operator(ops.SrtLoaderReadSrtFile.bl_idname, text="Srt File 読み込み")
         row.operator(ops.SrtLoaderResetSrtFile.bl_idname, text="字幕情報の破棄")
         row = layout.row()
-        row.operator(ops.SrtLoaderSaveSrtFile.bl_idname, text="字幕ファイルの保存")
+        row.operator(ops.SrtLoaderSaveSrtFile.bl_idname, text="Srt Fileへの保存")
 
 
 class JimakuPanel(SrtLoaderPanelBase, bpy.types.Panel):
@@ -141,9 +141,13 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         for txt in jimaku.text.split("\n"):
             col.label(text=txt)
         split = layout.split(factor=0.2, align=True)
-        _ = split.column(align=True)
-        col = split.column(align=True)
+        _ = split.column()
+        col = split.column()
         col.operator(ops.SrtLoaderEditJimaku.bl_idname)
+        row = layout.row(align=True)
+        row.separator()
+        row = layout.row(align=True)
+        row.operator(ops.SrtLoaderGenerateCurrentJimakuImage.bl_idname, text="字幕画像の作成")
         row = layout.row(align=True)
         row.separator()
 
@@ -159,12 +163,6 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
             "start_frame",
             text=smpte_from_frame(start_frame),
         )
-        col.operator(
-            ops.SrtLoaderUpdateJimakuStartFrame.bl_idname, text="PlayHead→プロパティ+Strip"
-        )
-        row = layout.row(align=True)
-        row.separator()
-
         row = layout.row(align=True)
         split = row.split(factor=0.2)
         split.alignment = "RIGHT"
@@ -175,14 +173,13 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
             "frame_duration",
             text=smpte_from_frame(frame_duration),
         )
-        col.operator(
+        row = layout.row(align=True)
+        row.operator(
             ops.SrtLoaderUpdateJimakuFrameDuration.bl_idname, text="Strip→プロパティ"
         )
         row = layout.row(align=True)
         row.separator()
 
-        row = layout.row(align=True)
-        row.operator(ops.SrtLoaderGenerateCurrentJimakuImage.bl_idname, text="字幕画像の作成")
         row = layout.row(align=True)
         row.operator(
             ops.SrtLoaderRepositionCurrentJimakuImage.bl_idname, text="字幕画像の再配置"
@@ -217,7 +214,8 @@ class JimakuSettingsPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         row.separator()
         row = layout.row(align=True)
         row.operator(
-            ops.SrtLoaderUpdateJimakuSettings.bl_idname, text="Strip→Properties"
+            ops.SrtLoaderUpdateJimakuSettings.bl_idname,
+            text="Selected Strip→Properties"
         )
 
 
@@ -514,7 +512,8 @@ class DefaultSettingsPanel(SrtLoaderPanelBase, bpy.types.Panel):
         row.separator()
         row = layout.row(align=True)
         row.operator(
-            ops.SrtLoaderUpdateDefaultJimakuSettings.bl_idname, text="Strip→Properties"
+            ops.SrtLoaderUpdateDefaultJimakuSettings.bl_idname,
+            text="Selected Strip→Properties"
         )
 
 
