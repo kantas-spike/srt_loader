@@ -350,18 +350,21 @@ class SrtLoaderUpdateJimakuSettings(bpy.types.Operator):
         if not srtloarder_settings.srt_file:
             return False
         else:
+            target_strip = context.scene.sequence_editor.active_strip
+            if target_strip is None:
+                return False
+            if target_strip.get("generated_by") != "srt_loader":
+                return False
+
             jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
-            index = bpy.data.objects[0].srtloarder_jimaku.index
-            jimaku = jimaku_list[index]
-            target_strip = find_strip(jimaku.no)
-            return len(jimaku_list) > 0 and target_strip is not None
+            return len(jimaku_list) > 0
 
     def execute(self, context: Context) -> Set[str] | Set[int]:
         jimaku_list = bpy.data.objects[0].srtloarder_jimaku.list
         idx = bpy.data.objects[0].srtloarder_jimaku.index
         jimaku = jimaku_list[idx]
 
-        target_strip: bpy.types.ImageSequence = find_strip(jimaku.no)
+        target_strip = context.scene.sequence_editor.active_strip
         if target_strip:
             jimaku.settings.channel_no = target_strip.channel
             jimaku.settings.offset_x = target_strip.transform.offset_x
