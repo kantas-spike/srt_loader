@@ -334,6 +334,7 @@ class SrtLoaderUpdateJimakuFrameDuration(bpy.types.Operator):
 
         target_strip = find_strip(jimaku.no)
         if target_strip:
+            jimaku.start_frame = target_strip.frame_start
             jimaku.frame_duration = target_strip.frame_final_duration
         return {"FINISHED"}
 
