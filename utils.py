@@ -256,12 +256,16 @@ def get_src_preset_dirpath(subdir=None):
     return os.path.join(os.path.dirname(__file__), preset_dirname)
 
 
+DEFAULT_STRLOARDER_PRESET_PATH = "presets/srt_loader"
+
+
 def get_style_json_from_presets(preset_name):
     user_script_path = bpy.utils.script_path_user()
     if user_script_path is None:
         logging.error("bpy.utils.script_path_user() is None!!")
         return
-    style_json_dir = os.path.join(user_script_path, "presets/srt_loader/styles_json")
+    style_json_dir = os.path.join(user_script_path,
+                                  f"{DEFAULT_STRLOARDER_PRESET_PATH}/styles_json")
     style_json_path = os.path.join(style_json_dir, f"{preset_name}.json")
     if not os.path.isfile(style_json_path):
         logging.error(
@@ -271,12 +275,19 @@ def get_style_json_from_presets(preset_name):
     return style_json_path
 
 
-def setup_styles_json():
+def get_srtloader_preset_path():
     user_script_path = bpy.utils.script_path_user()
     if user_script_path is None:
-        logging.error("bpy.utils.script_path_user() is None!!")
         return
-    style_json_dir = os.path.join(user_script_path, "presets/srt_loader/styles_json")
+    return os.path.join(user_script_path, DEFAULT_STRLOARDER_PRESET_PATH)
+
+
+def setup_styles_json():
+    preset_path = get_srtloader_preset_path()
+    if preset_path is None:
+        logging.error("srtloader_preset_path is None!!")
+        return
+    style_json_dir = os.path.join(preset_path, "styles_json")
     if not os.path.isdir(style_json_dir):
         os.makedirs(style_json_dir)
         logging.info(f"make style json dir: {style_json_dir} ...")
@@ -287,20 +298,22 @@ def setup_styles_json():
 
 
 def setup_styles_preset_from_base_styles_presets(target_subdir):
-    user_script_path = bpy.utils.script_path_user()
-    if user_script_path is None:
-        logging.error("bpy.utils.script_path_user() is None!!")
+    preset_path = get_srtloader_preset_path()
+    if preset_path is None:
+        logging.error("srtloader_preset_path is None!!")
         return
-    style_preset_dir = os.path.join(
-        user_script_path, f"presets/srt_loader/{target_subdir}"
-    )
+    style_preset_dir = os.path.join(preset_path, target_subdir)
     if not os.path.isdir(style_preset_dir):
         os.makedirs(style_preset_dir)
         logging.info(f"make style json dir: {style_preset_dir} ...")
 
-    src_files = os.path.join(get_src_preset_dirpath("base_styles_presets"), "*.py")
+    template_path = os.path.join(get_src_preset_dirpath(), "preset_template.py")
+    src_files = os.path.join(get_src_preset_dirpath("styles_json"), "*.json")
     for f in glob.glob(src_files):
-        shutil.copy(f, style_preset_dir)
+        fname = os.path.splitext(os.path.basename(f))[0]
+        dst_path = os.path.join(style_preset_dir, f"{fname}.py")
+        logging.info(f"copy preset_template to {dst_path}")
+        shutil.copy(template_path, dst_path)
 
 
 def setup_addon_presets():
