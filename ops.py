@@ -415,7 +415,7 @@ def find_jimaku(list, no):
             return jimaku
 
 
-def find_strip(no, generated_by="srt_loarder"):
+def find_strip(no, generated_by="srt_loader"):
     sequences = bpy.context.scene.sequence_editor.sequences
     for seq in sequences:
         if (
@@ -426,7 +426,7 @@ def find_strip(no, generated_by="srt_loarder"):
             return seq
 
 
-def remove_image_strips(target_no=None, generated_by="srt_loarder"):
+def remove_image_strips(target_no=None, generated_by="srt_loader"):
     target_strips = []
     sequences = bpy.context.scene.sequence_editor.sequences
     for seq in sequences:
@@ -441,7 +441,7 @@ def remove_image_strips(target_no=None, generated_by="srt_loarder"):
         sequences.remove(seq)
 
 
-def create_image_strips(target_no=None, generated_by="srt_loarder"):
+def create_image_strips(target_no=None, generated_by="srt_loader"):
     jimaku_data = bpy.data.objects[0].srtloarder_jimaku
     strloader_data = bpy.data.objects[0].srtloarder_settings
 
