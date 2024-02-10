@@ -430,9 +430,17 @@ def find_strip(no, generated_by="srt_loader"):
             return seq
 
 
+def setup_old_strips_map(oldmap, generated_by="srt_loader"):
+    sequences = bpy.context.scene.sequence_editor.sequences_all
+    for seq in sequences:
+        if seq.type == "IMAGE" and seq.get("generated_by") == generated_by:
+            if no := seq.get("jimaku_no"):
+                oldmap[no] = seq
+
+
 def remove_image_strips(target_no=None, generated_by="srt_loader"):
     target_strips = []
-    sequences = bpy.context.scene.sequence_editor.sequences
+    sequences = bpy.context.scene.sequence_editor.sequences_all
     for seq in sequences:
         if seq.type == "IMAGE" and seq.get("generated_by") == generated_by:
             if target_no is None:
@@ -442,7 +450,24 @@ def remove_image_strips(target_no=None, generated_by="srt_loader"):
                 break
 
     for seq in target_strips:
-        sequences.remove(seq)
+        pm = seq.parent_meta()
+        logging.info(f"pm: {pm}")
+        if pm:
+            pm.sequences.remove(seq)
+        else:
+            bpy.context.scene.sequence_editor.sequences.remove(seq)
+
+
+def get_current_meta_strip(context):
+    meta_stack = context.scene.sequence_editor.meta_stack
+    if meta_stack:
+        return meta_stack[-1]
+    return None
+
+
+def adjust_meta_duration(meta_strip, added_strip):
+    if meta_strip.frame_final_end < added_strip.frame_final_end:
+        meta_strip.frame_final_end = added_strip.frame_final_end
 
 
 def create_image_strips(target_no=None, generated_by="srt_loader"):
@@ -455,16 +480,19 @@ def create_image_strips(target_no=None, generated_by="srt_loader"):
 
     image_dir = bpy.path.abspath(strloader_data.image_dir)
     jimaku_list = jimaku_data.list
+    old_seq_map = {}
     if target_no is not None:
         jimaku = find_jimaku(jimaku_list, target_no)
         jimaku_list = [jimaku]
+        remove_image_strips(target_no, generated_by)
+    else:
+        setup_old_strips_map(old_seq_map, generated_by)
 
-    remove_image_strips(target_no, generated_by)
-
-    img_strips = []
+    meta_strip = get_current_meta_strip(bpy.context)
     for jimaku in jimaku_list:
         image_path = os.path.join(image_dir, f"{jimaku['no']}.png")
         if not os.path.isfile(image_path):
+            logging.warning(f"image file not exist: {image_path}")
             continue
 
         if jimaku.settings.useJimakuSettings:
@@ -496,16 +524,21 @@ def create_image_strips(target_no=None, generated_by="srt_loader"):
         # 専用の色を設定
         img.color_tag = "COLOR_05"
 
-        img_strips.append(img)
-
-        if target_no is not None:
-            break
-
-    if len(img_strips) > 0:
-        bpy.ops.sequencer.select_all(action="DESELECT")
-        for img in img_strips:
-            bpy.context.scene.sequence_editor.active_strip = img
-
+        old_seq = old_seq_map.get(img.get("jimaku_no"))
+        if old_seq:
+            pm = old_seq.parent_meta()
+            if pm:
+                org_channel = old_seq.channel
+                pm.sequences.remove(old_seq)
+                img.move_to_meta(pm)
+                img.channel = org_channel
+                adjust_meta_duration(pm, img)
+            else:
+                bpy.context.scene.sequence_editor.sequences.remove(old_seq)
+        elif meta_strip:
+            img.move_to_meta(meta_strip)
+            adjust_meta_duration(meta_strip, img)
+            bpy.context.scene.sequence_editor.display_stack(meta_strip)
 
 
 class SrtLoaderGenerateImagesBase:
