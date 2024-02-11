@@ -449,13 +449,17 @@ def remove_image_strips(target_no=None, generated_by="srt_loader"):
                 target_strips.append(seq)
                 break
 
+    changed_pm_set = set()
     for seq in target_strips:
         pm = seq.parent_meta()
-        logging.info(f"pm: {pm}")
         if pm:
             pm.sequences.remove(seq)
+            changed_pm_set.add(pm)
         else:
             bpy.context.scene.sequence_editor.sequences.remove(seq)
+
+    for pm in changed_pm_set:
+        adjust_meta_time(pm)
 
 
 def get_current_meta_strip(context):
@@ -465,9 +469,17 @@ def get_current_meta_strip(context):
     return None
 
 
-def adjust_meta_duration(meta_strip, added_strip):
-    if meta_strip.frame_final_end < added_strip.frame_final_end:
-        meta_strip.frame_final_end = added_strip.frame_final_end
+def adjust_meta_time(meta_strip):
+    start_list = []
+    end_list = []
+    for seq in meta_strip.sequences:
+        start_list.append(seq.frame_start)
+        end_list.append(seq.frame_final_end)
+
+    meta_start = min(start_list)
+    meta_end = max(end_list)
+    meta_strip.frame_start = meta_start
+    meta_strip.frame_final_end = meta_end
 
 
 def create_image_strips(target_no=None, generated_by="srt_loader"):
@@ -531,13 +543,13 @@ def create_image_strips(target_no=None, generated_by="srt_loader"):
                 org_channel = old_seq.channel
                 pm.sequences.remove(old_seq)
                 img.move_to_meta(pm)
+                adjust_meta_time(pm)
                 img.channel = org_channel
-                adjust_meta_duration(pm, img)
             else:
                 bpy.context.scene.sequence_editor.sequences.remove(old_seq)
         elif meta_strip:
             img.move_to_meta(meta_strip)
-            adjust_meta_duration(meta_strip, img)
+            adjust_meta_time(meta_strip)
             bpy.context.scene.sequence_editor.display_stack(meta_strip)
 
 
