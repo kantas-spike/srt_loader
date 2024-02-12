@@ -753,11 +753,7 @@ class SrtLoaderSetPresetName(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class SrtLoaderApplyPresets(bpy.types.Operator):
-    bl_idname = "srt_loader.apply_presets"
-    bl_label = "プリセットを設定する"
-    bl_description = "プリセットを設定する"
-    bl_options = {"REGISTER", "UNDO"}
+class SrtLoaderPresetsBase():
 
     style_type: bpy.props.EnumProperty(
         name="設定先のスタイル",
@@ -776,6 +772,13 @@ class SrtLoaderApplyPresets(bpy.types.Operator):
             list = bpy.data.objects[0].srtloarder_jimaku.list
             index = bpy.data.objects[0].srtloarder_jimaku.index
             return list[index].styles
+
+
+class SrtLoaderApplyPresets(SrtLoaderPresetsBase, bpy.types.Operator):
+    bl_idname = "srt_loader.apply_presets"
+    bl_label = "プリセットを設定する"
+    bl_description = "プリセットを設定する"
+    bl_options = {"REGISTER"}
 
     def execute(self, context: Context) -> Set[str] | Set[int]:
         target_styles = bpy.data.objects[0].srtloarder_settings.styles
@@ -801,6 +804,276 @@ class SrtLoaderApplyPresets(bpy.types.Operator):
         return {"FINISHED"}
 
 
+def popup_menu_draw_empty_input(menu, context):
+    menu.layout.label(text="プリセット名を指定してください")
+
+
+def popup_menu_draw_name_exists(menu, context):
+    menu.layout.label(text="指定されたプリセット名は登録済です。別の名前を指定してください。")
+
+
+def popup_menu_draw_invalid_name(menu, context):
+    menu.layout.label(text="不正なプリセット名が指定されました。")
+
+
+def popup_menu_draw_failure(menu, context):
+    menu.layout.label(text="処理に失敗しました。")
+
+
+DEFAULT_PRESET_NAME = "NEW_STYLE"
+
+
+class SrtLoaderOverwriteStyleAsPresetWithDialog(SrtLoaderPresetsBase, bpy.types.Operator):
+    bl_idname = "srt_loader.overwrite_style_as_preset_with_dialog"
+    bl_label = "現在のスタイルをプリセットに上書き保存する"
+    bl_description = "現在のスタイルをプリセットに上書き保存する"
+    bl_options = {"REGISTER"}
+
+    preset_name: bpy.props.StringProperty(name=DEFAULT_PRESET_NAME)
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        print("preset_name", self.preset_name)
+        if self.preset_name == "default":
+            self.report(
+                type={"ERROR"},
+                message="defaultプリセットは上書きできません",
+            )
+            return {"CANCELLED"}
+
+        bpy.ops.srt_loader.save_style_as_preset('INVOKE_DEFAULT',
+                                                preset_name=self.preset_name,
+                                                style_type=self.style_type)
+
+        return {"FINISHED"}
+
+    def invoke(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        styles = self.get_target_styles()
+        self.preset_name = styles.preset_name
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+    def draw(self, context: Context):
+        layout = self.layout
+        row = layout.row()
+        row.label(text=f"プリセット: {self.preset_name} に上書き保存しますか?")
+
+
+class SrtLoaderSaveStyleAsPresetWithDialog(SrtLoaderPresetsBase, bpy.types.Operator):
+    bl_idname = "srt_loader.save_style_as_preset_with_dialog"
+    bl_label = "現在のスタイルをプリセットとして保存する"
+    bl_description = "現在のスタイルをプリセットとして保存する"
+    bl_options = {"REGISTER"}
+
+    preset_name: bpy.props.StringProperty(name=DEFAULT_PRESET_NAME)
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        wm = context.window_manager
+        print("preset_name", self.preset_name)
+        preset_name = self.preset_name.strip()
+        if len(preset_name) == 0:
+            wm.popup_menu(popup_menu_draw_empty_input, title="プリセット名が未指定", icon="ERROR")
+            return {"CANCELLED"}
+
+        file_name = None
+        try:
+            file_name = utils.get_valid_file_name(preset_name)
+        except ValueError:
+            wm.popup_menu(popup_menu_draw_invalid_name, title="プリセット名が不正", icon="ERROR")
+            return {"CANCELLED"}
+
+        preset_name_set = utils.get_nameset_of_src_preset()
+        print(preset_name_set)
+        if file_name in preset_name_set:
+            wm.popup_menu(popup_menu_draw_name_exists, title="プリセット名が登録済", icon="ERROR")
+            return {"CANCELLED"}
+
+        bpy.ops.srt_loader.save_style_as_preset('INVOKE_DEFAULT', preset_name=file_name, style_type=self.style_type)
+
+        return {"FINISHED"}
+
+    def invoke(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        self.preset_name = DEFAULT_PRESET_NAME
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+    def draw(self, context: Context):
+        layout = self.layout
+        row = layout.row()
+        row.prop(self, "preset_name", text="プリセット名")
+
+
+class SrtLoaderSaveStyleAsPreset(SrtLoaderPresetsBase, bpy.types.Operator):
+    bl_idname = "srt_loader.save_style_as_preset"
+    bl_label = "現在のスタイルをプリセットとして保存する"
+    bl_description = "現在のスタイルをプリセットとして保存する"
+    bl_options = {"REGISTER"}
+
+    preset_name: bpy.props.StringProperty(name=DEFAULT_PRESET_NAME)
+
+    def modal(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        print("preset_name", self.preset_name)
+
+        styles = self.get_target_styles()
+        utils.save_style_as_preset(self.preset_name, styles,
+                                   self.style_type == "jimaku")
+        styles.preset_name = self.preset_name
+
+        self.report(
+            type={"INFO"},
+            message=f"preset saved: {self.preset_name}",
+        )
+        return {"FINISHED"}
+
+    def invoke(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        context.window_manager.modal_handler_add(self)
+        return {"RUNNING_MODAL"}
+
+
+class SrtLoaderRenamePresetNameWithDialog(SrtLoaderPresetsBase, bpy.types.Operator):
+    bl_idname = "srt_loader.rename_preset_name_with_dialog"
+    bl_label = "現在のプリセット名を変更する"
+    bl_description = "現在のプリセット名を変更する"
+    bl_options = {"REGISTER"}
+
+    preset_name: bpy.props.StringProperty(name=DEFAULT_PRESET_NAME)
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        wm = context.window_manager
+        print("preset_name", self.preset_name)
+        preset_name = self.preset_name.strip()
+        if len(preset_name) == 0:
+            wm.popup_menu(popup_menu_draw_empty_input, title="プリセット名が未指定", icon="ERROR")
+            return {"CANCELLED"}
+
+        file_name = None
+        try:
+            file_name = utils.get_valid_file_name(preset_name)
+        except ValueError:
+            wm.popup_menu(popup_menu_draw_invalid_name, title="プリセット名が不正", icon="ERROR")
+            return {"CANCELLED"}
+
+        preset_name_set = utils.get_nameset_of_src_preset()
+        if file_name in preset_name_set:
+            wm.popup_menu(popup_menu_draw_name_exists, title="プリセット名が登録済", icon="ERROR")
+            return {"CANCELLED"}
+
+        bpy.ops.srt_loader.rename_preset_name('INVOKE_DEFAULT', preset_name=file_name,
+                                              style_type=self.style_type)
+
+        # wm.popup_menu(popup_menu_draw, title="test", icon="ERROR")
+        self.report(
+            type={"INFO"},
+            message=f"preset saved: {file_name}",
+        )
+        return {"FINISHED"}
+
+    def invoke(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        styles = self.get_target_styles()
+        self.preset_name = styles.preset_name
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+    def draw(self, context: Context):
+        layout = self.layout
+        row = layout.row()
+        row.prop(self, "preset_name", text="プリセット名")
+
+
+class SrtLoaderRenamePresetName(SrtLoaderPresetsBase, bpy.types.Operator):
+    bl_idname = "srt_loader.rename_preset_name"
+    bl_label = "現在のプリセット名を変更する"
+    bl_description = "現在のプリセット名を変更する"
+    bl_options = {"REGISTER"}
+
+    preset_name: bpy.props.StringProperty(name=DEFAULT_PRESET_NAME)
+
+    def modal(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        print("preset_name", self.preset_name)
+        wm = context.window_manager
+        styles = self.get_target_styles()
+        try:
+            utils.rename_preset(styles.preset_name, self.preset_name)
+        except FileExistsError as e:
+            logging.error(e)
+            wm.popup_menu(popup_menu_draw_failure, title="プリセットの名前変更に失敗しました",
+                          icon="ERROR")
+            return {"CANCELLED"}
+
+        styles.preset_name = self.preset_name
+
+        self.report(
+            type={"INFO"},
+            message=f"preset renamed: {self.preset_name}",
+        )
+        return {"FINISHED"}
+
+    def invoke(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        context.window_manager.modal_handler_add(self)
+        return {"RUNNING_MODAL"}
+
+
+class SrtLoaderDeletePresetWithDialog(SrtLoaderPresetsBase, bpy.types.Operator):
+    bl_idname = "srt_loader.delete_preset_with_dialog"
+    bl_label = "現在のスタイルプリセットを削除する"
+    bl_description = "現在のスタイルプリセットを削除する"
+    bl_options = {"REGISTER"}
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        styles = self.get_target_styles()
+        preset_name = styles.preset_name
+
+        bpy.ops.srt_loader.delete_preset("INVOKE_DEFAULT", style_type=self.style_type)
+
+        self.report(
+            type={"INFO"},
+            message=f"preset deleted: {preset_name}",
+        )
+        return {"FINISHED"}
+
+    def invoke(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+    def draw(self, context: Context):
+        styles = self.get_target_styles()
+        preset_name = styles.preset_name
+
+        layout = self.layout
+        col = layout.column()
+        col.label(text=f"プリセット: {preset_name} を削除しますか?")
+
+
+class SrtLoaderDeletePreset(SrtLoaderPresetsBase, bpy.types.Operator):
+    bl_idname = "srt_loader.delete_preset"
+    bl_label = "現在のスタイルプリセットを削除する"
+    bl_description = "現在のスタイルプリセットを削除する"
+    bl_options = {"REGISTER"}
+
+    def modal(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        styles = self.get_target_styles()
+        preset_name = styles.preset_name
+        if preset_name == "default":
+            self.report(
+                type={"ERROR"},
+                message="defaultプリセットは削除できません",
+            )
+            return {"CANCELLED"}
+
+        utils.delete_preset(styles.preset_name)
+        styles.preset_name = "default"
+
+        # wm.popup_menu(popup_menu_draw, title="test", icon="ERROR")
+        self.report(
+            type={"INFO"},
+            message=f"preset deleted: {preset_name}",
+        )
+        return {"FINISHED"}
+
+    def invoke(self, context: Context, event: Event) -> Set[str] | Set[int]:
+        context.window_manager.modal_handler_add(self)
+        return {"RUNNING_MODAL"}
+
+
 class_list = [
     StrLoaderGetTimestampOfPlayhead,
     SrtLoaderResetSrtFile,
@@ -823,4 +1096,11 @@ class_list = [
     SrtLoaderSetupAddonPresets,
     SrtLoaderSetPresetName,
     SrtLoaderApplyPresets,
+    SrtLoaderSaveStyleAsPreset,
+    SrtLoaderSaveStyleAsPresetWithDialog,
+    SrtLoaderOverwriteStyleAsPresetWithDialog,
+    SrtLoaderRenamePresetName,
+    SrtLoaderRenamePresetNameWithDialog,
+    SrtLoaderDeletePreset,
+    SrtLoaderDeletePresetWithDialog,
 ]

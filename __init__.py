@@ -243,8 +243,49 @@ class JimakuStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         split.alignment = "RIGHT"
         split.label(text="プリセット")
         split.menu(SrtLoaderJimakuStylesPresetsMenu.bl_idname, text=preset_name)
+
         row = layout.row(align=True)
-        btn = row.operator(ops.SrtLoaderApplyPresets.bl_idname, text="プリセットを反映")
+        btn = row.operator(ops.SrtLoaderApplyPresets.bl_idname,
+                           text="プリセットの内容をスタイルに反映")
+        btn.style_type = "jimaku"
+
+
+class JimakuPresetControlPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
+    bl_label = "プリセットの管理"
+    bl_idname = "SRTLOADER_PT_JimakuPresetControl"
+    bl_parent_id = "SRTLOADER_PT_JimakuStyles"
+
+    def draw(self, context: Context):
+        srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
+        cur_idx = srtloarder_jimaku.index
+        jimaku = srtloarder_jimaku.list[cur_idx]
+        preset_name = jimaku.styles.preset_name
+        layout = self.layout
+        row = layout.row()
+
+        col = row.column()
+        btn = col.operator(ops.SrtLoaderRenamePresetNameWithDialog.bl_idname,
+                           text="プリセット名の変更")
+        btn.style_type = "jimaku"
+        col.enabled = (preset_name != "default")
+
+        col = row.column()
+        btn = col.operator(ops.SrtLoaderDeletePresetWithDialog.bl_idname,
+                           text="プリセットの削除")
+        btn.style_type = "jimaku"
+        col.enabled = (preset_name != "default")
+
+        row = layout.row()
+        row.separator()
+        row = layout.row()
+        btn = row.operator(ops.SrtLoaderOverwriteStyleAsPresetWithDialog.bl_idname,
+                           text="現在のスタイルを上書き保存")
+        row.enabled = (preset_name != "default")
+
+        btn.style_type = "jimaku"
+        row = layout.row()
+        btn = row.operator(ops.SrtLoaderSaveStyleAsPresetWithDialog.bl_idname,
+                           text="現在のスタイルを名前を付けて保存")
         btn.style_type = "jimaku"
 
 
@@ -531,7 +572,44 @@ class DefaultStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
         split.label(text="プリセット")
         split.menu(SrtLoaderDefaultStylesPresetsMenu.bl_idname, text=preset_name)
         row = layout.row(align=True)
-        btn = row.operator(ops.SrtLoaderApplyPresets.bl_idname, text="プリセットを反映")
+        btn = row.operator(ops.SrtLoaderApplyPresets.bl_idname, text="プリセットの内容をスタイルに反映")
+        btn.style_type = "default"
+
+
+class DefaultPresetControlPanel(SrtLoaderPanelBase, bpy.types.Panel):
+    bl_label = "プリセットの管理"
+    bl_idname = "SRTLOADER_PT_DefaultPresetControl"
+    bl_parent_id = "SRTLOADER_PT_DefaultStyles"
+
+    def draw(self, context: Context):
+        srtloarder_settings = bpy.data.objects[0].srtloarder_settings
+        preset_name = srtloarder_settings.styles.preset_name
+        layout = self.layout
+        row = layout.row()
+
+        col = row.column()
+        btn = col.operator(ops.SrtLoaderRenamePresetNameWithDialog.bl_idname,
+                     text="プリセット名の変更")
+        btn.style_type = "default"
+        col.enabled = (preset_name != "default")
+
+        col = row.column()
+        btn = col.operator(ops.SrtLoaderDeletePresetWithDialog.bl_idname,
+                     text="プリセットの削除")
+        btn.style_type = "default"
+        col.enabled = (preset_name != "default")
+
+        row = layout.row()
+        row.separator()
+        row = layout.row()
+        btn = row.operator(ops.SrtLoaderOverwriteStyleAsPresetWithDialog.bl_idname,
+                     text="現在のスタイルを上書き保存")
+        btn.style_type = "default"
+        row.enabled = (preset_name != "default")
+
+        row = layout.row()
+        btn = row.operator(ops.SrtLoaderSaveStyleAsPresetWithDialog.bl_idname,
+                     text="現在のスタイルを名前を付けて保存")
         btn.style_type = "default"
 
 
@@ -795,6 +873,7 @@ classes = (
         JimakuTextAndTimePanel,
         JimakuSettingsPanel,
         JimakuStylesPanel,
+        JimakuPresetControlPanel,
         JimakuImageStylesPanel,
         JimakuTextStylesPanel,
         JimakuBordersStylesPanel,
@@ -806,6 +885,7 @@ classes = (
         SrtLoaderPreferences,
         DefaultSettingsPanel,
         DefaultStylesPanel,
+        DefaultPresetControlPanel,
         DefaultImageStylesPanel,
         DefaultTextStylesPanel,
         DefaultBordersStylesPanel,

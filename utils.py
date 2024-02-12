@@ -5,6 +5,7 @@ import os
 import glob
 import shutil
 import logging
+import re
 
 
 def get_frame_rate():
@@ -256,6 +257,16 @@ def get_src_preset_dirpath(subdir=None):
     return os.path.join(os.path.dirname(__file__), preset_dirname)
 
 
+def get_nameset_of_src_preset():
+    preset_path = get_srtloader_preset_path()
+    src_files = os.path.join(preset_path, "styles_json", "*.json")
+    name_set = set()
+    for f in glob.glob(src_files):
+        fname = os.path.splitext(os.path.basename(f))[0]
+        name_set.add(fname)
+    return name_set
+
+
 DEFAULT_STRLOARDER_PRESET_PATH = "presets/srt_loader"
 
 
@@ -314,6 +325,63 @@ def setup_styles_preset_from_base_styles_presets(target_subdir):
         dst_path = os.path.join(style_preset_dir, f"{fname}.py")
         logging.info(f"copy preset_template to {dst_path}")
         shutil.copy(template_path, dst_path)
+
+
+def get_valid_file_name(name):
+    # [django/django/utils/text.py at main · django/django]
+    #            (https://github.com/django/django/blob/main/django/utils/text.py#L272)
+    s = str(name).strip().replace(" ", "_")
+    s = re.sub(r"(?u)[^-\w.]", "", s)
+    if s in {"", ".", ".."}:
+        raise ValueError("Could not derive file name from '%s'" % name)
+    return s
+
+
+def save_style_as_preset(preset_name, style, for_jimaku=True):
+    json_data = styles_to_json(style, for_jimaku)
+    preset_path = get_srtloader_preset_path()
+    new_preset_path = os.path.join(preset_path, "styles_json", f"{preset_name}.json")
+    with open(new_preset_path, "w") as f:
+        f.write(json.dumps(json_data))
+
+    template_path = os.path.join(get_src_preset_dirpath(), "preset_template.py")
+
+    dst_files = []
+    dst_files.append(os.path.join(preset_path, "default_styles", f"{preset_name}.py"))
+    dst_files.append(os.path.join(preset_path, "jimaku_styles", f"{preset_name}.py"))
+
+    for f in dst_files:
+        shutil.copy(template_path, f)
+
+
+def delete_preset(preset_name):
+    target_files = []
+    preset_path = get_srtloader_preset_path()
+    target_files.append(os.path.join(preset_path, "styles_json", f"{preset_name}.json"))
+    target_files.append(os.path.join(preset_path, "default_styles", f"{preset_name}.py"))
+    target_files.append(os.path.join(preset_path, "jimaku_styles", f"{preset_name}.py"))
+
+    for f in target_files:
+        os.remove(f)
+
+
+def rename_preset(src_name, dst_name):
+    preset_path = get_srtloader_preset_path()
+    src_files = []
+    dst_files = []
+    src_files.append(os.path.join(preset_path, "styles_json", f"{src_name}.json"))
+    dst_files.append(os.path.join(preset_path, "styles_json", f"{dst_name}.json"))
+    src_files.append(os.path.join(preset_path, "default_styles", f"{src_name}.py"))
+    dst_files.append(os.path.join(preset_path, "default_styles", f"{dst_name}.py"))
+    src_files.append(os.path.join(preset_path, "jimaku_styles", f"{src_name}.py"))
+    dst_files.append(os.path.join(preset_path, "jimaku_styles", f"{dst_name}.py"))
+
+    for src in src_files:
+        if not os.path.isfile(src):
+            raise FileExistsError(f"{src}は存在しません")
+
+    for src, dst in zip(src_files, dst_files):
+        shutil.move(src, dst)
 
 
 def setup_addon_presets():
