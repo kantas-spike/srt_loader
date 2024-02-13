@@ -280,7 +280,6 @@ class JimakuPresetControlPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         row = layout.row()
         btn = row.operator(ops.SrtLoaderOverwriteStyleAsPresetWithDialog.bl_idname,
                            text="現在のスタイルを上書き保存")
-        row.enabled = (preset_name != "default")
 
         btn.style_type = "jimaku"
         row = layout.row()
@@ -838,7 +837,10 @@ class SrtLoaderPreferences(bpy.types.AddonPreferences):
         col.prop(self, "gimp_path", text="Gimpのパス")
         row = layout.row()
         row.separator()
-        row.operator(ops.SrtLoaderSetupAddonPresets.bl_idname)
+        row = layout.row()
+        row.label(text="プリセット")
+        row = layout.row()
+        row.operator(ops.SrtLoaderSetupAddonPresets.bl_idname, text="デフォルトプリセットを初期値に戻す")
 
 
 class SrtLoaderDefaultStylesPresetsMenu(bpy.types.Menu):
@@ -881,7 +883,6 @@ classes = (
         JimakuShadowStylesPanel,
         JimakuBoxStylesPanel,
         JimakuEditor,
-        SrtLoaderPreferences,
         DefaultSettingsPanel,
         DefaultStylesPanel,
         DefaultPresetControlPanel,
@@ -895,6 +896,7 @@ classes = (
         JimakuList,
         SrtLoaderDefaultStylesPresetsMenu,
         SrtLoaderJimakuStylesPresetsMenu,
+        SrtLoaderPreferences,
     ]
 )
 
