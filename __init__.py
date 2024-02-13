@@ -187,7 +187,7 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
 
 class JimakuSettingsPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
-    bl_label = "字幕設定"
+    bl_label = "チャンネルと位置"
     bl_idname = "SRTLOADER_PT_JimakuSettings"
 
     def draw_header(self, context: Context):
@@ -534,7 +534,7 @@ class JimakuEditor(bpy.types.Panel):
 
 
 class DefaultSettingsPanel(SrtLoaderPanelBase, bpy.types.Panel):
-    bl_label = "デフォルト設定"
+    bl_label = "デフォルトのチャンネルと位置"
     bl_idname = "SRTLOADER_PT_DefaultSettings"
 
     def draw(self, context: Context):
@@ -559,7 +559,7 @@ class DefaultSettingsPanel(SrtLoaderPanelBase, bpy.types.Panel):
 
 
 class DefaultStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
-    bl_label = "デフォルトスタイル"
+    bl_label = "デフォルトのスタイル"
     bl_idname = "SRTLOADER_PT_DefaultStyles"
 
     def draw(self, context: Context):
