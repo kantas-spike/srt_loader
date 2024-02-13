@@ -823,7 +823,8 @@ def popup_menu_draw_failure(menu, context):
 DEFAULT_PRESET_NAME = "NEW_STYLE"
 
 
-class SrtLoaderOverwriteStyleAsPresetWithDialog(SrtLoaderPresetsBase, bpy.types.Operator):
+class SrtLoaderOverwriteStyleAsPresetWithDialog(SrtLoaderPresetsBase,
+                                                bpy.types.Operator):
     bl_idname = "srt_loader.overwrite_style_as_preset_with_dialog"
     bl_label = "現在のスタイルをプリセットに上書き保存する"
     bl_description = "現在のスタイルをプリセットに上書き保存する"
@@ -833,13 +834,6 @@ class SrtLoaderOverwriteStyleAsPresetWithDialog(SrtLoaderPresetsBase, bpy.types.
 
     def execute(self, context: Context) -> Set[str] | Set[int]:
         print("preset_name", self.preset_name)
-        if self.preset_name == "default":
-            self.report(
-                type={"ERROR"},
-                message="defaultプリセットは上書きできません",
-            )
-            return {"CANCELLED"}
-
         bpy.ops.srt_loader.save_style_as_preset('INVOKE_DEFAULT',
                                                 preset_name=self.preset_name,
                                                 style_type=self.style_type)

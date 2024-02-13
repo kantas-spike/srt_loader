@@ -605,7 +605,6 @@ class DefaultPresetControlPanel(SrtLoaderPanelBase, bpy.types.Panel):
         btn = row.operator(ops.SrtLoaderOverwriteStyleAsPresetWithDialog.bl_idname,
                      text="現在のスタイルを上書き保存")
         btn.style_type = "default"
-        row.enabled = (preset_name != "default")
 
         row = layout.row()
         btn = row.operator(ops.SrtLoaderSaveStyleAsPresetWithDialog.bl_idname,
