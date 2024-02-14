@@ -547,6 +547,7 @@ def create_image_strips(target_no=None, generated_by="srt_loader"):
                 img.channel = org_channel
             else:
                 bpy.context.scene.sequence_editor.sequences.remove(old_seq)
+                img.channel = channel_no
         elif meta_strip:
             img.move_to_meta(meta_strip)
             adjust_meta_time(meta_strip)
