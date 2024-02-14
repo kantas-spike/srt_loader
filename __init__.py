@@ -957,7 +957,7 @@ def register():
 
 def unregister():
     bpy.types.SEQUENCER_MT_context_menu.remove(menu_fn)
-    for c in classes:
+    for c in reversed(classes):
         bpy.utils.unregister_class(c)
 
     remove_props()
