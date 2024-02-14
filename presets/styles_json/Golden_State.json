@@ -1,0 +1,32 @@
+{
+  "with_shadow": false,
+  "number_of_borders": 1,
+  "with_box": false,
+  "crop_area": { "padding_x": 25, "padding_y": 25 },
+  "styles": {
+    "text": {
+      "font_family": "Noto Sans JP Bold",
+      "size": 80,
+      "color": "#c4c837",
+      "line_space_rate": -0.3,
+      "align": "center"
+    },
+    "borders": [
+      { "color": "#377ac8", "rate": 0.08, "feather": 0 },
+      { "color": "#40516a", "rate": 0.08, "feather": 0 }
+    ],
+    "shadow": {
+      "color": "#000000",
+      "offset_x": 10,
+      "offset_y": 10,
+      "blur_radius": 15,
+      "opacity": 0.5
+    },
+    "box": {
+      "padding_x": 20,
+      "padding_y": 20,
+      "color": "#cccccc",
+      "opacity": 1.0
+    }
+  }
+}
