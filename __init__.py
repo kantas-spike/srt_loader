@@ -175,7 +175,7 @@ class JimakuTextAndTimePanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         )
         row = layout.row(align=True)
         row.operator(
-            ops.SrtLoaderUpdateJimakuFrameDuration.bl_idname, text="Strip→プロパティ"
+            ops.SrtLoaderUpdateJimakuFrameDuration.bl_idname, text="Strip→プロパティー"
         )
         row = layout.row(align=True)
         row.separator()
@@ -215,7 +215,7 @@ class JimakuSettingsPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         row = layout.row(align=True)
         row.operator(
             ops.SrtLoaderUpdateJimakuSettings.bl_idname,
-            text="Selected Strip→Properties"
+            text="Selected Strip→プロパティー"
         )
 
 
@@ -254,6 +254,7 @@ class JimakuPresetControlPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
     bl_label = "プリセットの管理"
     bl_idname = "SRTLOADER_PT_JimakuPresetControl"
     bl_parent_id = "SRTLOADER_PT_JimakuStyles"
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context: Context):
         srtloarder_jimaku = bpy.data.objects[0].srtloarder_jimaku
@@ -289,7 +290,7 @@ class JimakuPresetControlPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
 
 class JimakuImageStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
-    bl_label = "画像スタイル"
+    bl_label = "Padding設定"
     bl_idname = "SRTLOADER_PT_JimakuImageStyles"
     bl_parent_id = "SRTLOADER_PT_JimakuStyles"
 
@@ -306,7 +307,7 @@ class JimakuImageStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
 
 class JimakuTextStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
-    bl_label = "テキストスタイル"
+    bl_label = "テキスト設定"
     bl_idname = "SRTLOADER_PT_JimakuTextStyles"
     bl_parent_id = "SRTLOADER_PT_JimakuStyles"
 
@@ -326,7 +327,7 @@ class JimakuTextStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
 
 class JimakuBordersStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
-    bl_label = "縁取りスタイル"
+    bl_label = "縁取り設定"
     bl_idname = "SRTLOADER_PT_JimakuBordersStyles"
     bl_parent_id = "SRTLOADER_PT_JimakuStyles"
 
@@ -422,7 +423,7 @@ class JimakuBordersStyle2Panel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
 
 class JimakuShadowStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
-    bl_label = "影スタイル"
+    bl_label = "Shadow設定"
     bl_idname = "SRTLOADER_PT_JimakuShadowStyles"
     bl_parent_id = "SRTLOADER_PT_JimakuStyles"
 
@@ -471,7 +472,7 @@ class JimakuShadowStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
 
 
 class JimakuBoxStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
-    bl_label = "BOXスタイル"
+    bl_label = "Box設定"
     bl_idname = "SRTLOADER_PT_JimakuBoxStyles"
     bl_parent_id = "SRTLOADER_PT_JimakuStyles"
 
@@ -495,7 +496,7 @@ class JimakuBoxStylesPanel(SrtLoaderPanelJimakuBase, bpy.types.Panel):
         layout.enabled = jimaku.styles.useJimakuStyle and box.enabled
         layout_property_row(
             layout,
-            "BOXの色",
+            "Boxの色",
             box,
             "color",
         )
@@ -553,7 +554,7 @@ class DefaultSettingsPanel(SrtLoaderPanelBase, bpy.types.Panel):
         row = layout.row(align=True)
         row.operator(
             ops.SrtLoaderUpdateDefaultJimakuSettings.bl_idname,
-            text="Selected Strip→Properties"
+            text="Selected Strip→プロパティー"
         )
 
 
@@ -579,6 +580,7 @@ class DefaultPresetControlPanel(SrtLoaderPanelBase, bpy.types.Panel):
     bl_label = "プリセットの管理"
     bl_idname = "SRTLOADER_PT_DefaultPresetControl"
     bl_parent_id = "SRTLOADER_PT_DefaultStyles"
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context: Context):
         srtloarder_settings = bpy.data.objects[0].srtloarder_settings
@@ -612,7 +614,7 @@ class DefaultPresetControlPanel(SrtLoaderPanelBase, bpy.types.Panel):
 
 
 class DefaultImageStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
-    bl_label = "字幕画像スタイル"
+    bl_label = "Padding設定"
     bl_idname = "SRTLOADER_PT_DefaultImageStyles"
     bl_parent_id = "SRTLOADER_PT_DefaultStyles"
 
@@ -628,7 +630,7 @@ class DefaultImageStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
 
 
 class DefaultTextStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
-    bl_label = "テキストスタイル"
+    bl_label = "テキスト設定"
     bl_idname = "SRTLOADER_PT_DefaultTextStyles"
     bl_parent_id = "SRTLOADER_PT_DefaultStyles"
 
@@ -653,7 +655,7 @@ class DefaultTextStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
 
 
 class DefaultBordersStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
-    bl_label = "縁取りスタイル"
+    bl_label = "縁取り設定"
     bl_idname = "SRTLOADER_PT_DefaultBordersStyles"
     bl_parent_id = "SRTLOADER_PT_DefaultStyles"
 
@@ -734,7 +736,7 @@ class DefaultBordersStyle2Panel(SrtLoaderPanelBase, bpy.types.Panel):
 
 
 class DefaultShadowStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
-    bl_label = "影スタイル"
+    bl_label = "Shadow設定"
     bl_idname = "SRTLOADER_PT_DefaultShadowStyles"
     bl_parent_id = "SRTLOADER_PT_DefaultStyles"
 
@@ -773,7 +775,7 @@ class DefaultShadowStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
 
 
 class DefaultBoxStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
-    bl_label = "BOXスタイル"
+    bl_label = "Box設定"
     bl_idname = "SRTLOADER_PT_DefaultBoxStyles"
     bl_parent_id = "SRTLOADER_PT_DefaultStyles"
 
@@ -787,7 +789,7 @@ class DefaultBoxStylesPanel(SrtLoaderPanelBase, bpy.types.Panel):
         layout.enabled = box.enabled
         layout_property_row(
             layout,
-            "BOXの色",
+            "Boxの色",
             box,
             "color",
         )

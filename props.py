@@ -189,7 +189,7 @@ class SrtLoaderJimakuStylePorperties(bpy.types.PropertyGroup):
 
 class SrtLoaderJimakuProperties(bpy.types.PropertyGroup):
     no: bpy.props.IntProperty(default=0, update=update_jimaku_property)
-    text: bpy.props.StringProperty(default="Text", update=update_jimaku_property)
+    text: bpy.props.StringProperty(default="テキスト", update=update_jimaku_property)
     start_frame: bpy.props.FloatProperty(
         default=1, min=1, precision=0, update=update_jimaku_property
     )
